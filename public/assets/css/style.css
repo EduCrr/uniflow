@@ -1,0 +1,1091 @@
+#page-topbar {
+    background-color: #222 !important;
+}
+.fc-time-grid-event .fc-title {
+    text-align: start !important;
+}
+
+.title {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 170px;
+}
+
+.tableHome {
+    min-height: calc(100% - 24px);
+}
+.btnHome {
+    width: fit-content;
+    margin-left: auto;
+    /* margin-right: 22.5px; */
+    background-color: #44a2d2;
+    border-radius: 4px;
+    color: white !important;
+    padding: 8px 12px;
+    margin-bottom: 22.5px;
+}
+
+.contenJob {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+}
+.contentJobSingle {
+    width: 25%;
+    margin: 20px 0px;
+}
+
+#anexos .btn {
+    padding: 0px !important;
+    height: 20px !important;
+}
+#anexos .header-item {
+    height: 40px;
+}
+.initalResume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 0px;
+}
+.initalResume h5 {
+    margin-bottom: 1px;
+}
+.initalResume select {
+    margin-top: 0;
+    margin-left: 10px;
+    width: fit-content;
+}
+.navbar-brand-box {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+.changeDem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem !important;
+}
+.formSelectDate {
+    display: flex;
+    margin-right: 10px;
+}
+h5 {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.formSelectDate select {
+    width: auto;
+}
+.btns {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 5px;
+}
+.btns i {
+    position: inherit !important;
+    font-size: 17px;
+    background-color: transparent;
+    border: transparent !important;
+    height: 0px !important;
+    width: 0px !important;
+}
+.editBt {
+    margin-right: 8px;
+    background: #44a2d2;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.answerBtn{
+    background: #3dbb3d;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.deleteBtn{
+    background: #f73e1d;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.editBt i, .deleteBtn i, .answerBtn i{
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    justify-content: center;
+    color: white;
+}
+.dateComentary {
+    text-align: right !important;
+    font-size: 11px !important;
+}
+.modal-dialog {
+    max-width: 900px;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.adjust-title {
+    max-width: 100%;
+}
+
+.imgBrands {
+    max-width: 120px;
+}
+.cardsBrand {
+    display: flex;
+}
+.cardAdjust {
+    width: 100%;
+}
+.cardsBrand .pricingTable {
+    margin: auto;
+}
+.cardAdjust .card-body {
+    display: flex;
+    flex-direction: column;
+}
+.cardBtn {
+    margin-top: auto;
+}
+.filepond--credits {
+    display: none;
+}
+.spaceh5 {
+    margin-bottom: 15px !important;
+}
+
+.filepond--label-action {
+    display: none !important;
+}
+.filepond--drop-label {
+    cursor: pointer;
+    background-color: #f2f5f7;
+}
+
+.deleteArq {
+    cursor: pointer;
+    margin-bottom: 0px;
+}
+.select2-selection__choice {
+    color: white;
+}
+.select2-selection__choice__display {
+    border: 0px !important;
+    outline: 0;
+}
+.select2-container .select2-selection--multiple .select2-selection__choice {
+    border: 0px !important;
+}
+.select2-selection__choice__remove {
+    color: white !important;
+    border-right: 0px !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover{
+    background-color: transparent !important;
+}
+.select2 {
+    width: 100% !important;
+}
+.card-title-desc {
+    margin-top: 15px;
+}
+.card-adjust {
+    min-height: calc(100% - 24px);
+}
+
+#carouselExampleControls {
+    width: 100%;
+    background: #f2f5f7;
+    margin-top: 10px;
+}
+.carousel-inner {
+    text-align: center !important;
+}
+.carousel-control-next-icon,
+.carousel-control-prev-icon {
+    filter: invert(68%) sepia(13%) saturate(3352%) hue-rotate(170deg)
+        brightness(87%) contrast(87%);
+}
+
+.carousel-control-next,
+.carousel-control-prev {
+    width: 4%;
+}
+
+#area-chart,
+#line-chart,
+#bar-chart,
+#stacked,
+#pie-chart {
+    min-height: 342px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.online-circle {
+    position: absolute;
+    right: 0;
+    top: 116px;
+    left: 70px;
+}
+.submitForm {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+    outline: 0;
+    border: 0 !important;
+}
+.removeSelect select {
+    padding: 10px 0px;
+}
+
+.img-activity {
+    border: 1px solid #f8f9fa;
+    width: 36px;
+    height: 36px;
+    text-align: center;
+    line-height: 34px;
+    border-radius: 50%;
+    position: absolute;
+    left: -18px;
+    color: #44a2d2;
+    background-color: #f8f9fa;
+    font-size: 20px;
+    -webkit-box-shadow: 0 0 0 0.5px #f8f9fa;
+    box-shadow: 0 0 0 0.5px #f8f9fa;
+}
+.showUserArqs {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+.arqs .dropdown {
+    margin: 20px 0px;
+    margin-left: 20px;
+}
+.arqs .dropdown-menu.show {
+    margin-left: 30px !important;
+}
+.nameUserArq {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    margin-left: 30px;
+}
+.nameUserArq h5 {
+    font-weight: 400;
+    font-size: 15px;
+    margin-left: 0.25rem !important;
+}
+
+.showUsers {
+    display: flex;
+}
+.contenJob span {
+    cursor: pointer;
+    margin-top: 5px;
+    background: #44a2d2;
+    color: white;
+    padding: 5px 8px;
+    margin-right: 5px;
+    border-radius: 4px;
+}
+.adjustDrop .table-responsive {
+    position: inherit !important;
+    overflow: hidden;
+}
+.adjustName {
+    max-width: 220px !important;
+    white-space: inherit !important;
+}
+.links {
+    margin: 30px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.links p {
+    margin: 0px !important;
+}
+.linksName {
+    display: flex;
+    align-items: center;
+}
+.status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.status h5 {
+    margin-bottom: 0px !important;
+}
+.answer {
+    background: #3dbb3d;
+    color: white;
+    padding: 3px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+.activity .item-info {
+    margin-bottom: 45px !important;
+}
+.sendCheck {
+    background-color: #44a2d2;
+    color: white;
+    padding: 4px 6px;
+    margin-left: 25px;
+    border: 0;
+    outline: none;
+}
+.simplebar-mask {
+    position: static !important;
+}
+.timeline {
+    list-style-type: none;
+    height: 1px;
+    opacity: 0;
+}
+ul.timeline {
+    padding-left: 0rem !important;
+}
+.timeline .li {
+    transition: all 200ms ease-in;
+}
+.timestamp .author {
+    font-weight: 500;
+    text-align: center;
+    overflow: hidden; /* Adicione a propriedade overflow para lidar com o texto longo */
+    text-overflow: ellipsis; /* Adicione a propriedade text-overflow com valor ellipsis para exibir reticências (...) quando o texto estourar a div */
+    white-space: nowrap;
+}
+.timestamp {
+    margin-bottom: 20px;
+    padding: 0px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-weight: 100;
+    height: auto;
+}
+.timeline .status {
+    /* padding: 0px 40px; */
+    display: flex;
+    justify-content: center;
+    position: relative;
+    transition: all 200ms ease-in;
+    height: auto;
+}
+.timeline .status h6 {
+    margin-top: 25px;
+}
+.status-final{
+    position: absolute;
+    /* border-top: 2px solid #d6dce0; */
+    z-index: 99;
+}
+
+.timeline .iconStatus {
+    position: absolute;
+    top: -13px;
+    height: 25px;
+    width: 25px;
+    z-index: 100;
+}
+.timeline .status-final::after {
+    content: url("../images/ampulheta.png") !important;
+    position: absolute;
+    top: -13px;
+    z-index: 99;
+}
+
+.timeline .status-final::before {
+    content: "";
+    position: absolute;
+    top: 0%;
+    right: calc(50%);
+    width: calc(100%);
+    height: 2px;
+    background-color: #d6dce0;
+}
+
+/* .timeline .status-line {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 18px);
+    width: calc(100% - 18px);
+    height: 2px;
+    background-color: #3dbb3d;
+    transform: translateY(-50%);
+} */
+.lineTime {
+    width: 90%;
+    margin: auto !important;
+}
+
+.timeline .li.complete .status::before {
+    content: "";
+    position: absolute;
+    top: 0%;
+    left: calc(50% + 11px);
+    width: calc(100% - 18px);
+    height: 2px;
+    background-color: #3dbb3d;
+}
+.li.complete:last-child .status::before {
+    content: none !important;
+    width: 0px !important;
+  }
+
+/* .timeline .li.complete .status {
+    border-top: 2px solid #3dbb3d;
+}
+.timeline .li.complete .status:before {
+    background-color: #3dbb3d;
+    border: none;
+    transition: all 200ms ease-in;
+}
+.timeline .li.complete .status h4 {
+    color: #3dbb3d;
+} */
+
+/* .timeline .status::after {
+    content: url("../images/teste2.png");
+    position: absolute;
+    top: -15px;
+    z-index: 99;
+} */
+
+
+.reopenJob {
+    width: fit-content;
+    margin-left: auto;
+    background-color: #34495E;
+    color: white;
+    border: 0px;
+    outline: 0px;
+    margin-right: 5px;
+}
+.reopenJob:focus{
+    color: white !important;
+    background-color: #f73e1d;
+}
+
+.form-control:disabled, .form-control .reopenJob{
+    background-color: #34495E !important;
+}
+.loading {
+    position: absolute;
+    height: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    background-color: white;
+    z-index: 999;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.adjustStatus {
+    display: flex;
+    align-items: center;
+}
+.adjustStatus h6 {
+    margin-bottom: 0px;
+    margin-right: 15px;
+}
+.btnCreate {
+    margin-left: auto;
+}
+.btnCreate a {
+    background-color: #0c0c0c;
+    border: 0px;
+    border-radius: 4px;
+    outline: 0px;
+    color: white;
+}
+.btnCreate a:hover {
+    color: white;
+}
+
+a.alt {
+    color: white;
+    background-color: #f73e1d;
+}
+.fin {
+    color: white;
+    background-color: #3dbb3d;
+    cursor: pointer;
+}
+.fin:focus{
+    color: white !important;
+    background-color: #3dbb3d !important;
+}
+
+.form-control:disabled, .form-control .fin{
+    background-color: #3dbb3d !important;
+}
+
+.card-header .fa {
+    transition: 0.3s transform ease-in-out;
+}
+.card-header .collapsed .fa {
+    transform: rotate(90deg);
+}
+.pautasAg p {
+    margin-bottom: 40px;
+}
+.borderPautas {
+    padding: 8px 5px;
+    border-radius: 4px;
+    color: white;
+}
+.select2-container--default.select2-container--disabled
+    .select2-selection--multiple {
+    background-color: white !important;
+}
+.select2-container--default .select2-selection--multiple .select2-selection__choice{
+    margin-top: 0px !important;
+}
+.select2-selection {
+    margin-top: 0px !important;
+    height: 36px !important;
+    padding: 5px 6px !important;
+}
+.hidden {
+    display: none;
+}
+.avatar-xl {
+    object-fit: cover;
+}
+.leftAuto {
+    margin-left: auto;
+    display: flex;
+    justify-content: center;
+}
+
+.cardBodyAdjust {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cardBodyAdjust h5 {
+    position: absolute;
+    top: 20px;
+}
+
+#pie-chart text {
+    font-family: Arial !important;
+    font-size: 9px !;
+    fill: #adb5bd;
+}
+.btnDanger {
+    /* background-color: #f1556c !important; */
+}
+.btn-outline-secondary {
+    border: none !important;
+    color: white !important;
+}
+.btnEdit {
+    background-color: #f9bc0b !important;
+}
+.btnJob {
+    background-color: #3dbb3d !important;
+}
+.imgBrand {
+    max-width: 150px;
+}
+.btnBack {
+    background-color: #0c0c0c;
+    border: 0px;
+}
+.btnBack:hover:hover {
+    background-color: #0c0c0c;
+}
+
+.btnBack:focus {
+    background-color: #0c0c0c;
+    border: 0px;
+    color: white !important;
+}
+.init {
+    display: flex;
+    justify-content: space-between;
+    flex: 1;
+}
+.contentJobSingle h6:first-letter {
+    text-transform: capitalize;
+}
+.btnActive {
+    color: white !important;
+}
+.btnNotActive {
+    color: #6c757d;
+}
+.btnlogin {
+    background-color: #121212 !important;
+    border: 0px;
+}
+.bg-light {
+    background-color: #f5f5f5 !important;
+}
+.borderLogin {
+    margin: auto;
+    width: 25%;
+    border: 1px solid white !important;
+}
+
+.adjustResetPassword {
+    margin: auto;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.adJustCardEmail {
+    width: 35%;
+    padding: 5rem 0px;
+    margin: auto;
+}
+
+table .alert {
+    font-size: 16px;
+    color: #f1556c;
+}
+.btn-check:focus + .btn,
+.btn:focus {
+    box-shadow: none;
+    border: 0 !important;
+    outline: none !important;
+}
+
+.btn-outline-secondary:active:focus {
+    box-shadow: none;
+    border: 0 !important;
+    outline: none !important;
+}
+.alertSingleJob{
+ font-size: 16px;
+    color: #f1556c;
+}
+.form-control:focus{
+    color: none !important;
+    border-color: none !important;
+    outline:  none !important;
+    box-shadow: none !important;
+    background-color: none !important;
+}
+
+.notifyArea{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.notifyArea a{
+    width: inherit;
+}
+.selectAll{
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+}
+button.notification-item{
+    width: 100%;
+    border: 0px;
+}
+.notifyMenu{
+    background-color: transparent;
+    text-align: left;
+}
+.notifyMenu h6{
+    font-size: 13px !important;
+}
+.notifyContent{
+    background-color: #f8f9fa;
+}
+.notifyContent h6{
+    color: #adb5bd;
+}
+.notifyDate{
+    font-size: 11px;
+}
+.notifyContent .notifyDate{
+    color: #adb5bd;
+}
+.btn{
+    padding: 6px !important;
+}
+.noti-icon .badge {
+    right: 0px !important;
+}
+.avatar-notify{
+    border: 1px solid #6c757d;
+    background-color: #f8f8f8 !important;
+}
+
+.vertical-collpsed .navbar-brand-box {
+    width: auto!important;
+}
+
+.avatar-xs{
+    object-fit: cover;
+}
+
+.emailUser:disabled{
+    background-color: transparent !important;
+}
+.showStatus, #reopenJob{
+    color: white;
+    width: fit-content;
+    padding: 5px 8px;
+    margin-right: 5px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.showStatus p{
+    margin-bottom: 0px;
+}
+
+.initialGraphs{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.floatingBtn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #44a2d2;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: fixed;
+    bottom: 40px;
+    right: 10px;
+    z-index: 999999;
+}
+.floatingBtn i{
+    color: white;
+}
+.showInfojobs{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.nameJob{
+    align-items: center;
+   display: flex;
+}
+.nameJob span{
+    margin-left: 5px;
+}
+
+.nameJob span i{
+    background: #3dbb3d;
+    width: 30px;
+    height: 30px;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    margin-left: 5px;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+    justify-content: center;
+    color: white;
+}
+.btnPage{
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.select2-container--default .select2-selection--single{
+    border: 1px solid #ced4da !important;
+}
+.initalResume{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.acceptRefuseBtn{
+    align-items: center;
+    display: flex;
+    margin-right: 10px;
+}
+.acceptRefuseBtn span{
+    cursor: pointer;
+    background: #ff6a30;
+    color: white;
+    border-radius: 4px;
+    padding: .47rem .75rem;
+    margin-top: 0px;
+}
+
+.accept{
+    cursor: pointer;
+    background: #3dbb3d;
+    color: white;
+    margin-right: 15px;
+    border-radius: 4px;
+    padding: .47rem .75rem;
+    border: 0px;
+}
+.adjustInitialAdmin{
+    display: flex;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 25px !important;
+}
+
+select option:hover {
+    background-color: #ccc !important;
+    color: #fff !important;
+  }
+.iniciateJob{
+    display: flex;
+    align-items: center;
+    /* gap: 10px; */
+}  
+
+.text-muted {
+    color: #343434!important;
+}
+
+.adjustBriefing{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+a.arounded{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #44a2d2;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 100%;
+}
+
+.progressiveBar{
+    margin-bottom: 15px;
+   max-width: 250px;
+    margin-left: auto;
+}
+
+.progressiveBar small{
+    margin-top: -7px;
+}
+.green-btn{
+    background-color: #3dbb3d !important;
+    color: white !important;
+    border: 0px !important;
+}
+
+.green-btn:focus {
+    box-shadow: none !important
+}
+
+.red-btn{
+    background-color: #f73e1d !important;
+    color: white !important;
+    border: 0px !important;
+}
+
+.red-btn:focus {
+    box-shadow: none !important
+}
+.swal2-confirm {
+    background-color: #5bec5b !important;
+    color: white !important;
+    border: 0px !important;
+ }
+
+.swal2-confirm:focus {
+    box-shadow: none !important
+}
+.statusBadge{
+    padding: 5px;
+    margin-right: 5px;
+    border-radius: 4px;
+    color: white;
+    background: #6c757d;
+}
+.noneSpan{
+    cursor: pointer;
+    margin-top: 0px !important;
+    background: none  !important;
+    color: red  !important;
+    padding: 0  !important;
+    margin-right: 5px  !important;
+    border-radius: 0px !important;
+}
+.adjustPautas {
+    display: table;
+    width: 100%;
+    margin-bottom: 10px;
+}
+  
+.adjustPautas > * {
+    display: table-cell;
+    vertical-align: middle;
+}
+  
+.adjustPautas .progressiveBar {
+    max-width: 230px !important;
+    width: 230px !important;
+}
+a.driveBtn{
+    padding: 5px;
+    margin-right: 5px;
+    border-radius: 4px;
+    color: white;
+    background: #34495E;
+}
+.stopJob{
+    width: fit-content;
+    margin-left: auto;
+    background-color: #e6edf3;
+    color: #222;
+    border: 0px;
+    padding: 0.47rem 0.75rem;
+    outline: 0px;
+    margin-right: 5px;
+}
+.adjustSelects{
+    width: 230px;
+}
+.msg{
+    color: #3dbb3d;
+    font-size: 18px;
+}
+span.msg {
+    margin-left: 5px;
+}
+.emailDisabled:disabled{
+    background-color: transparent !important;
+}
+.select2-selection__clear{
+    top: 2px !important;
+}
+.atrasado{
+    font-weight: bold;
+    color: #f73e1d;
+    font-size: 15px;
+    margin-left: 10px;
+}
+.atrasadoText{
+    color: #f73e1d;
+    font-size: 11px;
+    margin-left: 10px;
+}
+.noPrazo{
+    color: #3dbb3d;
+    font-size: 11px;
+    margin-left: 10px;
+}
+.adjustPagination{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 1rem 22px;
+}
+@media only screen and (max-width: 1450px) {
+
+}
+@media only screen and (max-width: 1366px) {
+    
+    .contentJobSingle{
+        width: 50%;
+        justify-content: center;
+    }
+}
+   
+@media only screen and (max-width: 1280px) {
+    .adjustSelects{
+        width: 100%;
+    }
+}
+@media only screen and (max-width: 1080px) {
+    .statusComments{
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .initalResume{
+        flex-direction: column;
+    } 
+    /* body.sidebar-enable .vertical-menu{
+        display: none;
+    } */
+}
+@media only screen and (max-width: 768px) {
+    .contentJobSingle{
+        width: 100%;
+    }
+    .progressiveBar{
+        margin: 1rem auto;
+
+    }
+    
+}
+@media only screen and (max-width: 460px) {
+    .float-end{
+        float: none !important;
+    }
+    .dateComentary{
+        text-align: left !important;
+        font-size: 10px !important;
+        margin-bottom: 10px;
+    }  
+    .adjustStatus{
+        flex-direction: column;
+    } 
+    .adjustStatus .submitFinalize{
+        margin: auto;
+        margin-top: 15px;
+    }
+    .customResponsiveUl{
+        display: flex;
+        flex-direction: column;
+    }
+    .nav-tabs-custom .nav-item .nav-link::after{
+        bottom: 8px !important;
+    }
+}
