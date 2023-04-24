@@ -144,6 +144,11 @@ class RespostasController extends Controller
                 $agenciaNotificacao->tipo = 'observacao';
                 $agenciaNotificacao->save();
 
+                if( $quest->visualizada_col == 0 ){
+                    $quest->visualizada_col = 1;
+                    $quest->save();
+                }
+            
                 return back()->with('success', 'resposta adicionada!' );  
             }
        }

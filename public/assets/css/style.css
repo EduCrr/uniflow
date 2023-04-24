@@ -364,6 +364,11 @@ h5 {
 .simplebar-mask {
     position: static !important;
 }
+.showBriefing{
+    list-style-type: none;
+    height: 1px;
+    opacity: 0;
+}
 .timeline {
     list-style-type: none;
     height: 1px;

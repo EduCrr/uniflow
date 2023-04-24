@@ -34,8 +34,6 @@ class ColaboradorController extends Controller
             $query->where('excluido', null);
         }])->withCount(['questionamentos as count_questionamentos' => function ($query) {
             $query->where('visualizada_col', 0)->where('excluido', null);
-        }])->withCount(['notificacoes as count_notificacoes' => function ($query) use ($user) {
-            $query->where('visualizada', 0)->where('usuario_id', $user->id)->where('clicado', null);
         }])->orderBy('id', 'DESC')->where('excluido', null)->paginate(15);
 
         foreach($demandas as $key => $item){
@@ -763,7 +761,7 @@ class ColaboradorController extends Controller
 
             $demanda->save();
 
-            return back()->with('success', 'Job editado' );  
+            return back()->with('success', 'Job editado.' );  
 
         }
     }
@@ -1173,7 +1171,7 @@ class ColaboradorController extends Controller
         $demanda->save();
         $agenciaNotificacao->save();
 
-        return back()->with('success', 'Job pausando com sucesso.' );  
+        return back()->with('success', 'Job pausado com sucesso.' );  
 
     }
 

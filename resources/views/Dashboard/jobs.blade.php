@@ -142,17 +142,17 @@
                                                                     </td>
                                                                     <td>
                                                                         @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
-                                                                            <span class="statusBadge" style="margin: 0px">RECEBIDO</span>
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffc7a5" style="margin: 0px">RECEBIDO</span>
                                                                         @elseif($demanda->em_pauta == 1 && $demanda->pausado == 0)
-                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ff6a30">EM PAUTA</span>
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffa76d">EM PAUTA</span>
                                                                         @elseif ($demanda->em_pauta == 0 && $demanda->finalizada == 0 && $demanda->entregue == '0' && $demanda->pausado == 0)
-                                                                            <span style="background-color: #fb3232" class="statusBadge" style="margin: 0px">PENDENTE</span>
+                                                                            <span style="background-color: #ffb887" class="statusBadge" style="margin: 0px">PENDENTE</span>
                                                                         @elseif($demanda->entregue == 1  && $demanda->pausado == 0)
-                                                                            <span style="background-color: #44a2d2"  class="statusBadge" style="margin: 0px">ENTREGUE</span> 
+                                                                            <span style="background-color: #ff9652"  class="statusBadge" style="margin: 0px">ENTREGUE</span> 
                                                                         @elseif($demanda->pausado == 1)
-                                                                            <span class="statusBadge" style="margin: 0px; background-color: #b3e5ff">CONGELADO</span> 
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffd5bf">CONGELADO</span> 
                                                                         @elseif($demanda->finalizada == 1)
-                                                                            <span style="background-color: #3dbb3d" class="statusBadge" style="margin: 0px">FINALIZADO</span> 
+                                                                            <span style="background-color: #ff8538" class="statusBadge" style="margin: 0px">FINALIZADO</span> 
                                                                         @endif
                                                                     </td>
                                                                     <td>
@@ -179,12 +179,6 @@
                                                                         <a href="{{route('Job.copiar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" style="background-color: #a1a1a1" title="Copiar">
                                                                             <i class="fas fa-copy"></i>
                                                                         </a>
-                                                                        <a href="{{route('Job.editar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" title="Editar" style="background-color: #a1a1a1">
-                                                                            <i class="fas fa-edit"></i>
-                                                                        </a>
-                                                                        <a  href="{{route('Job.delete', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit deleteBt btnDanger" style="background-color: #a1a1a1" title="Deletar">
-                                                                            <i class="fas fa-trash"></i>
-                                                                        </a>
                                                                     </td>
                                                                     <td>
                                                                         @if($demanda->count_questionamentos > 0 )
@@ -192,11 +186,11 @@
                                                                             <i class="fas fa-comment-dots msg"></i>
                                                                         </span>
                                                                         @endif
-                                                                        @if($demanda->count_notificacoes > 0 )
+                                                                        {{-- @if($demanda->count_notificacoes > 0 )
                                                                             <span>
                                                                                 <i class="fas fa-bell msg"></i>
                                                                             </span>
-                                                                        @endif
+                                                                        @endif --}}
                                                                     </td>
                                                                 </tr>
                                                                 @endif

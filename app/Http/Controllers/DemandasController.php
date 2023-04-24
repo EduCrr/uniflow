@@ -97,12 +97,12 @@ class DemandasController extends Controller
                 }
             }else{
                 $showAg = false;
-                foreach($demanda['questionamentos'] as $quest){
-                    if( $quest->visualizada_col == 0 ){
-                        $quest->visualizada_col = 1;
-                        $quest->save();
-                    }
-                }
+                // foreach($demanda['questionamentos'] as $quest){
+                //     if( $quest->visualizada_col == 0 ){
+                //         $quest->visualizada_col = 1;
+                //         $quest->save();
+                //     }
+                // }
             }
 
             // $hasTimeAgenda = false;
@@ -233,8 +233,6 @@ class DemandasController extends Controller
             $query->where('excluido', null);
         }])->withCount(['questionamentos as count_questionamentos' => function ($query) {
             $query->where('visualizada_ag', 0)->where('excluido', null);
-        }])->withCount(['notificacoes as count_notificacoes' => function ($query) {
-            $query->where('visualizada', 0)->where('clicado', null);
         }])->orderBy('id', 'DESC');
        
         $search = $request->search;

@@ -49,8 +49,6 @@ class HomeController extends Controller
                     $query->whereHas('respostas', function ($query) {
                         $query->where('visualizada_ag', 0);
                     });
-                }])->withCount(['notificacoes as count_notificacoes' => function ($query) {
-                    $query->where('visualizada', 0)->where('clicado', null);
                 }])->orderBy('id', 'DESC')->paginate(15);
 
                 foreach($demandas as $key => $item){

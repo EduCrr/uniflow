@@ -128,11 +128,20 @@
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3 row">
+                                                                
                                                                 <div class="col-lg-12  mo-b-15">
-                                                                    <label for="example-datetime-local-input" class="col-sm-2 form-label">Briefing</label>
-                                                                    <textarea class="elm1" id="briefing" required name="briefing">{{ $demanda->briefing }}</textarea>
+                                                                    <div class="d-flex justify-content-center" style="height: 15px;">
+                                                                        <div style="margin-top: 20px;" class="spinner-border" role="status">
+                                                                            <br/>
+                                                                            <span class="sr-only">Carregando...</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="showBriefing">
+                                                                        <label for="example-datetime-local-input" class="col-sm-2 form-label">Briefing</label>
+                                                                        <textarea class="elm1" id="briefing" required name="briefing">{{ $demanda->briefing }}</textarea>
                                                                         <div class="invalid-feedback">
-                                                                        Preencha o prioridade
+                                                                            Preencha o briefing
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -218,6 +227,13 @@
             $('.select2').select2({
                 minimumResultsForSearch: Infinity
             });
+
+            setTimeout(function() {
+                $(".showBriefing").css("height", 'auto');
+                $(".showBriefing").css("opacity", '1');
+                $(".spinner-border").css("display", 'none');
+                
+            }, 800);
 
             const form = $("#formEdut");
             const submitButton = $("#submitButtonEdit");

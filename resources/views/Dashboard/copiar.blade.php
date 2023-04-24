@@ -130,16 +130,23 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div class="mb-3 row">
-                                                                <div class="col-lg-12  mo-b-15">
-                                                                    <label for="example-datetime-local-input" class="col-sm-2 form-label">Briefing</label>
-                                                                    <textarea class="elm1" id="briefing" required name="briefing">{{ $demanda->briefing }}</textarea>
-                                                                        <div class="invalid-feedback">
-                                                                        Preencha o prioridade
+                                                            <div class="d-flex justify-content-center" style="height: 15px;">
+                                                                <div style="margin-top: 20px;" class="spinner-border" role="status">
+                                                                    <br/>
+                                                                    <span class="sr-only">Carregando...</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="showBriefing">
+                                                                <div class="mb-3 row">
+                                                                    <div class="col-lg-12  mo-b-15">
+                                                                        <label for="example-datetime-local-input" class="col-sm-2 form-label">Briefing</label>
+                                                                        <textarea class="elm1" id="briefing" required name="briefing">{{ $demanda->briefing }}</textarea>
+                                                                            <div class="invalid-feedback">
+                                                                            Preencha o briefing
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            
                                                             <button id="submitButtonEdit" type="submit" class="btn btn-primary w-lg leftAuto">Atualizar</button>
                                                         </form>
                                                     </div>
@@ -182,22 +189,21 @@
 @endsection
 
 @section('plugins')
-    {{-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script> --}}
-    {{-- <script src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script> --}}
     <script src="{{ asset('assets/libs/tinymce/tinymce.min.js') }}"></script>
     <script src="{{ asset('assets/js/pages/form-editor.init.js') }}"></script>
 @endsection
 
 
 @section('scripts')
-    {{-- <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> --}}
     <script src="{{ asset('assets/js/select2.js') }}" ></script>
-
-    {{-- <script src="{{ asset('assets/js/pages/form-repeater.init.js')}}"></script> --}}
-    {{-- <script src="{{ asset('assets/libs/jquery.repeater/jquery.repeater.min.js')}}"></script> --}}
     <script>
 
-
+        setTimeout(function() {
+            $(".showBriefing").css("height", 'auto');
+            $(".showBriefing").css("opacity", '1');
+            $(".spinner-border").css("display", 'none');
+            
+        }, 800);
 
         $('.text-muted-tiny').each(function(){
              var txt = $(this).text();
