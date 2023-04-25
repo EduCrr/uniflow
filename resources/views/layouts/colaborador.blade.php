@@ -270,7 +270,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-sm-6">
-                    <script>document.write(new Date().getFullYear())</script> © UNICASA
+                    PROJETADO POR: MKT UNICASA TEAM
                 </div>
             </div>
         </div>

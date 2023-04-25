@@ -589,31 +589,31 @@
                                                         <div class="card-body">
                                                             <div style="display: flex">
                                                                 @if($demanda->em_pauta == '0' && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
-                                                                    <div class="showStatus" style="background-color: #6c757d">
+                                                                    <div class="showStatus" style="background-color: #ffc7a5">
                                                                         <p>STATUS: RECEBIDO</p>
                                                                     </div>
                                                                 @endif
 
                                                                 @if($demanda->em_pauta == '1' && $demanda->pausado == '0')
-                                                                    <div class="showStatus" style="background-color: #ff6a30">
+                                                                    <div class="showStatus" style="background-color: #ffa76d">
                                                                         <p>STATUS: EM PAUTA</p>
                                                                     </div>
                                                                 @endif
                                                                 
                                                                 @if($demanda->entregue == '1' && $demanda->pausado == '0')
-                                                                    <div class="showStatus"  style="background-color: #44a2d2">
+                                                                    <div class="showStatus"  style="background-color: #ff9652">
                                                                         <p>STATUS: ENTREGUE</p>
                                                                     </div>
                                                                 @endif
 
                                                                 @if($demanda->finalizada == '1')
-                                                                    <div class="showStatus" style="background-color: #3dbb3d">
+                                                                    <div class="showStatus" style="background-color: #ff8538">
                                                                         <p>STATUS: FINALIZADO</p>
                                                                     </div>
                                                                 @endif
 
                                                                 @if($demanda->pausado == '1')
-                                                                    <div class="showStatus" style="background-color: #b3e5ff">
+                                                                    <div class="showStatus" style="background-color: #ffd5bf">
                                                                         <p>STATUS: CONGELADO</p>
                                                                     </div>
                                                                 @endif
