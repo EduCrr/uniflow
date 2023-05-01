@@ -389,17 +389,27 @@
                                                                     <h6>Criado por</h6>
                                                                     <p>{{ $demanda['criador']->nome }}</p>
                                                                 </div>
-                                                                <div class="contentJobSingle">
-                                                                    <h6>Agência</h6>
-                                                                    <p>{{ $demanda['agencia']->nome }}</p>
-                                                                </div>
+                                                                @if($demanda->agencia != null)
+                                                                    <div class="contentJobSingle">
+                                                                        <h6>Agência</h6>
+                                                                        <p>{{ $demanda['agencia']->nome }}</p>
+                                                                    </div>
+                                                                @endif
                                                                 <div class="contentJobSingle">
                                                                     <h6>Agência usuário(s)</h6>
-                                                                    <div class="showUsers">
-                                                                        @foreach ($demanda->agencia['agenciasUsuarios'] as $usuario )
-                                                                            <span style="background-color: #222">  {{ $usuario->nome }} </span>
-                                                                        @endforeach
-                                                                    </div>
+                                                                    @if($demanda->agencia)
+                                                                        <div class="showUsers">
+                                                                            @foreach ($demanda->agencia['agenciasUsuarios'] as $usuario )
+                                                                                <span style="background-color: #222">  {{ $usuario->nome }} </span>
+                                                                            @endforeach
+                                                                        </div>
+                                                                        @else
+                                                                        <div class="showUsers">
+                                                                            @foreach ($demanda['demandasUsuario'] as $usuario )
+                                                                                <span style="background-color: #222">  {{ $usuario->nome }} </span>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    @endif
                                                                 </div>
                                                                 @if($demanda->drive)
                                                                 <div class="contentJobSingle">

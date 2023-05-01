@@ -29,6 +29,7 @@ class DemandasController extends Controller
         }])->first();
         
         $user = Auth::User();
+        $isAdminAg = $user->adminUserAgencia()->whereNull('excluido')->count();
         if($demanda){
             $demanda['agencia'] = $demanda->agencia()->with(['agenciasUsuarios' => function ($query) {
             $query->where('excluido', null);
@@ -37,7 +38,10 @@ class DemandasController extends Controller
             $demanda['questionamentos'] = $demanda->questionamentos()->where('excluido', null)->with(['usuario' => function ($query) {
             $query->where('excluido', null);
             }])->with('respostas.usuario')->get();
-
+            
+            if($user->tipo === 'agencia'){
+                $demanda['demandasUsuario'] = $demanda->demandasUsuario()->where('excluido', null)->get();
+            }
 
             foreach($demanda['prazosDaPauta'] as $key => $item) {
                 if($item->finalizado !== null) {
@@ -70,10 +74,17 @@ class DemandasController extends Controller
 
             $idsAgUser = [];
             $showAg = false;
-            
-            foreach($demanda['agencia']['agenciasUsuarios'] as $item){
-                array_push($idsAgUser, $item->id);
+
+            if($demanda['agencia']){
+                foreach($demanda['agencia']['agenciasUsuarios'] as $item){
+                    array_push($idsAgUser, $item->id);
+                }
+            }else{
+                foreach($demanda['demandasUsuario'] as $item){
+                    array_push($idsAgUser, $item->id);
+                }
             }
+            
             
             $isSend = LinhaTempo::where('demanda_id', $id)->where('status', 'Entregue')->count();
 
@@ -97,24 +108,8 @@ class DemandasController extends Controller
                 }
             }else{
                 $showAg = false;
-                // foreach($demanda['questionamentos'] as $quest){
-                //     if( $quest->visualizada_col == 0 ){
-                //         $quest->visualizada_col = 1;
-                //         $quest->save();
-                //     }
-                // }
             }
 
-            // $hasTimeAgenda = false;
-            
-            // $verifyTimeAgenda = DemandaTempo::where('demanda_id', $id)->where('finalizado', '=', null)->count();
-            // if ($verifyTimeAgenda == 0) {
-            //   $hasTimeAgenda = true;
-            // } else if ($verifyTimeAgenda > 0) {
-            //     $hasTimeAgenda = false;
-            // }
-
-            //porcentagem
             if ($demanda->finalizada == 1) {
                 $porcentagem = 100;
             } else {

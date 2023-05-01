@@ -118,8 +118,14 @@
                                                     </div>
                                                 </div>
                                             </div> 
+
+                                            @if(session('error-ambas'))
+                                                <div class="alert alert-danger">
+                                                    {{ session('error-ambas') }}
+                                                </div>
+                                            @endif
                                            
-                                            @if(count($user['usuariosAgencias']) > 0 && $user->tipo == 'agencia')
+                                            @if($user->tipo == 'agencia')
                                                 @if(session('error-ag'))
                                                     <div class="alert alert-danger">
                                                         {{ session('error-ag') }}
@@ -135,13 +141,23 @@
                                                         </select>
                                                     </div> 
                                                 </div>
+                                                <br/>
+                                                <div class="mb-1 row agencia_admin">
+                                                    <div class="col-lg-12  mo-b-15 alingCheckBox">
+                                                        <span>Adicionar como admin</span>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input getAdminAgValue" type="checkbox"  @if($user->count_userAg > 0) checked @endif name="adminAg" value="true">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <br/>
                                             @endif
                                             @if($user->tipo == 'colaborador')
                                                 @if(session('error-ag-marca'))
-                                                <div class="alert alert-danger">
-                                                    {{ session('error-ag-marca') }}
-                                                </div>
-                                            @endif
+                                                    <div class="alert alert-danger">
+                                                        {{ session('error-ag-marca') }}
+                                                    </div>
+                                                @endif
                                                 <div class="row">
                                                     <div class="col-md-12 mb-7 removeSelect">
                                                         <label class="col-sm-2 form-label">Marca(s)</label>
@@ -159,9 +175,9 @@
                                                     </div>
                                                 </div>
                                                 <br/>
-                                                @if(session('error-ag-col'))
+                                                @if(session('error-ag'))
                                                     <div class="alert alert-danger">
-                                                        {{ session('error-ag-col') }}
+                                                        {{ session('error-ag') }}
                                                     </div>
                                                 @endif
                                                 <div class="row">
@@ -179,9 +195,34 @@
                                                             Preencha o campo agência
                                                         </div>
                                                     </div>
+                                                   
                                                 </div>
+                                                <br/>
                                             @endif
-                                            <br/>
+                                            @if($user->tipo == 'agencia')
+                                                @if(session('error-ag-marca'))
+                                                    <div class="alert alert-danger">
+                                                        {{ session('error-ag-marca') }}
+                                                    </div>
+                                                @endif
+                                                <div class="row marcas">
+                                                    <div class="col-md-12 mb-7 removeSelect">
+                                                        <label class="col-sm-2 form-label">Marca(s)</label>
+                                                    </div>
+                                                    <div style="margin-top: 10px">
+                                                       <select required  class="select2-multiple form-control" name="marcas[]" multiple="multiple"
+                                                            id="select2Multiple">
+                                                            @foreach ($marcas as $marca )
+                                                                <option data-cor="{{ $marca->cor }}"  @if (!empty(old('marcas')) && in_array($marca->id, old('marcas'))) selected  @endif value="{{ $marca->id }}">{{ $marca->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo marca
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <br/>
+                                            @endif
                                             <div class="row">
                                                 <div class="col-md-12 mb-3">
                                                     <label for="avatar" class="form-label pt-0">Foto</label>
@@ -236,6 +277,28 @@
         })()
 
         $(document).ready(function() {
+            let userAg = @json($user->tipo);
+
+            if(userAg === 'agencia'){
+                const verifySwitch = (is_checked) =>{
+                    if(is_checked){
+                        $('.marcas').removeClass('hidden'); 
+                        $('#select2Multiple').attr("required", "true").prop('disabled', false);
+                    }else{
+                        $('.marcas').addClass('hidden'); 
+                        $('#select2Multiple').attr("required", "false").prop('disabled', true);
+                    }
+                }
+
+                let isAdminAg = @json($user->count_userAg);
+                let is_checked = isAdminAg === 0 ? false : true;
+                verifySwitch(is_checked);
+
+                $('.getAdminAgValue').on('click', function() {
+                    is_checked = $(this).prop('checked');
+                    verifySwitch(is_checked);
+                });
+            }
             
             $('.select2').select2({
                 minimumResultsForSearch: Infinity

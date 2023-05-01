@@ -17,6 +17,7 @@ use App\Models\Marca;
 use App\Models\Questionamento;
 use App\Models\Resposta;
 use App\Models\LinhaTempo;
+use App\Models\AdminAgencia;
 
 
 class User extends Authenticatable
@@ -60,16 +61,16 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    // public function agencias(){
-    //     return $this->belongsToMany(Agencia::class, 'agencias_usuarios', 'usuario_id', 'agencia_ìd',);
-    // }
-
     public function usuariosAgencias(){
         return $this->belongsToMany(Agencia::class, 'agencias_usuarios', 'usuario_id', 'agencia_id');
     }
 
     public function colaboradoresAgencias(){
         return $this->belongsToMany(Agencia::class, 'agencias_colaboradores', 'usuario_id', 'agencia_id');
+    }
+
+    public function usuarioDemandas(){
+        return $this->belongsToMany(Demanda::class, 'demandas_usuarios', 'usuario_id', 'demanda_id');
     }
 
     public function marcas(){
@@ -103,5 +104,8 @@ class User extends Authenticatable
     public function notificacoes(){
         return $this->hasMany(Notificacao::class);
     }
-   
+
+    public function adminUserAgencia(){
+        return $this->hasMany(AdminAgencia::class, 'usuario_id');
+    }
 }

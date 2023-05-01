@@ -37,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             $notifications = null;
             $notificationsCount = null;
             $agenciaLogged = null;
+            $isAdminAg = null;
             if(Auth::check()){
                 if($user->tipo === 'colaborador'){
                     $notifications = Notificacao::where('usuario_id', $user->id)->with(['demanda' => function ($query) {
@@ -52,11 +53,10 @@ class AppServiceProvider extends ServiceProvider
                         $query->select('id', 'titulo');
                         }])->orderBy('id', 'DESC')->orderBy('criado', 'DESC')->limit(15)->get(); 
                     $notificationsCount = Notificacao::where('visualizada', '0')->where('agencia_id', $agId->agencia_id)->count();
-                        
+                    $isAdminAg = $user->adminUserAgencia()->whereNull('excluido')->count();
                     $agenciaLogged = User::select('id')->where('id', $user->id)->with('usuariosAgencias')->first();
                 }
             }
-
 
             $dataAtual = Carbon::now();
             $dataAtual->second(0);
@@ -66,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('notificationsCount', $notificationsCount);
             $view->with('agenciaLogged', $agenciaLogged);
             $view->with('loggedUser', Auth::user());
+            $view->with('isAdminAg', $isAdminAg);
         });
     }
 }

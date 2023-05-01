@@ -35,7 +35,7 @@
                                         <h4 class="mt-3">{{ $user->nome }}</h4>
                                         <p class="text-muted font-size-13">
                                             @if ($user->tipo === 'agencia')
-                                                Agência
+                                                Agência @if($isAdminAg > 0) (Admin) @endif
                                             @elseif($user->tipo == 'colaborador')
                                                 Colaborador
                                             @elseif($user->tipo == 'admin')
@@ -145,6 +145,28 @@
                                                         </div>
                                                     </div> 
                                                 </div>
+                                                @if($isAdminAg > 0)
+                                                    @if(session('error-ag-marca'))
+                                                        <div class="alert alert-danger">
+                                                            {{ session('error-ag-marca') }}
+                                                        </div>
+                                                    @endif
+                                                    <div class="row marcas">
+                                                        <div class="col-md-12 mb-7 removeSelect">
+                                                            <label class="col-sm-2 form-label">Marca(s)</label>
+                                                        </div>
+                                                        <select required  class="select2-multiple form-control" name="marcas[]" multiple="multiple"
+                                                            id="select2Multiple">
+                                                            @foreach ($marcas as $marca )
+                                                                <option data-cor="{{ $marca->cor }}"  @if (!empty(old('marcas')) && in_array($marca->id, old('marcas'))) selected  @endif value="{{ $marca->id }}">{{ $marca->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo marca
+                                                        </div>
+                                                    </div>
+                                                    <br/>
+                                                @endif
                                             @endif
                                             <div class="row">
                                                 <div class="col-md-12 mb-3">
@@ -158,19 +180,53 @@
                                                     />
                                                 </div>
                                             </div>
-                                            @if($loggedUser->tipo === 'colaborador')
+                                            @if($user->tipo == 'colaborador')
+                                                @if(session('error-ag-marca'))
+                                                    <div class="alert alert-danger">
+                                                        {{ session('error-ag-marca') }}
+                                                    </div>
+                                                @endif
                                                 <div class="row">
                                                     <div class="col-md-12 mb-7 removeSelect">
-                                                        <label class="col-sm-2 form-label">Marcas</label>
+                                                        <label class="col-sm-2 form-label">Marca(s)</label>
                                                     </div>
-                                                    
                                                     <div style="margin-top: 10px">
-                                                        @foreach ($user['marcas'] as $marca )
-                                                            <span style="background: {{ $marca->cor }}" class="borderPautas">{{ $marca->nome }}</span>
-                                                        @endforeach
+                                                       <select required  class="select2-multiple form-control" name="marcas[]" multiple="multiple"
+                                                            id="select2Multiple">
+                                                            @foreach ($marcas as $marca )
+                                                                <option data-cor="{{ $marca->cor }}"  @if (!empty(old('marcas')) && in_array($marca->id, old('marcas'))) selected  @endif value="{{ $marca->id }}">{{ $marca->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo marca
+                                                        </div>
                                                     </div>
                                                 </div>
-                                              @endif
+                                                <br/>
+                                                @if(session('error-ag'))
+                                                    <div class="alert alert-danger">
+                                                        {{ session('error-ag') }}
+                                                    </div>
+                                                @endif
+                                                <div class="row">
+                                                    <div class="col-md-12 mb-7 removeSelect">
+                                                        <label class="col-sm-2 form-label">Agência(s)</label>
+                                                    </div>
+                                                    <div style="margin-top: 10px">
+                                                       <select required  class="select2-multiple form-control" name="agencias_colaboradores[]" multiple="multiple"
+                                                            id="select2Multiple-ag">
+                                                            @foreach ($agencias as $agencia )
+                                                                <option  data-cor="{{ '#222' }}"  @if (!empty(old('agencias_colaboradores')) && in_array($marca->id, old('agencias_colaboradores'))) selected  @endif value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo agência
+                                                        </div>
+                                                    </div>
+                                                   
+                                                </div>
+                                                <br/>
+                                            @endif
                                             <div class="mb-3">
                                                 <button type="submit" class="btn btn-primary w-lg leftAuto">Atualizar</button>
                                             </div>
@@ -214,6 +270,24 @@
             $('.select2').select2({
                 minimumResultsForSearch: Infinity
             });
+            
+            // Select2 Multiple
+            $('.select2-multiple').select2({
+                placeholder: "Selecionar marca(s)",
+                allowClear: true,
+                templateSelection: function (data, container) {
+                    var cor = $(data.element).data('cor'); // pega a cor do data-cor
+                    $(container).css("background-color", cor); // define a cor de fundo do option
+                    return data.text;
+                },
+            });
+
+            
+            let ids = @json($idsBrands);
+            $('#select2Multiple').val(ids).trigger('change');
+
+            let idsAg = @json($idsAgencys);
+            $('#select2Multiple-ag').val(idsAg).trigger('change');
               
             $('#estados').on('change', function() {
                 id = this.value;

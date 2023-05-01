@@ -1,4 +1,8 @@
-@extends('layouts.colaborador')
+@php
+    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
+@endphp
+
+@extends($layout)
 @section('title', 'Criar etapa 2')
 
 @section('css')
@@ -27,7 +31,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <form id="formEdut" style="margin-top: 15px" method="POST" action="{{route('Job.criar_action_stage_2', ['id' => $demanda->id])}}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                            <form id="formEdit" style="margin-top: 15px" method="POST" action="{{route('Job.criar_action_stage_2', ['id' => $demanda->id])}}" enctype="multipart/form-data" class="needs-validation" novalidate>
                                                 @csrf
                                                 <div class="col-sm-12">
                                                     <div class="card">
@@ -43,29 +47,47 @@
                                                                     <div class="col-lg-6  mo-b-15">
                                                                         <label for="inputT" class="form-label pt-0">Título</label>
                                                                         <div class="">
-                                                                            <input name="titulo" value="{{$demanda->id}} {{$demanda->titulo}}" class="form-control" type="text" required id="inputT">
+                                                                            <input name="titulo" value="{{$demanda->titulo}}" class="form-control" type="text" required id="inputT">
                                                                             <div class="invalid-feedback">
                                                                                 Preencha o campo título
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    <div class="col-lg-6">
-                                                                        <label class="col-sm-2 form-label">Agência</label>
-                                                                        <div class="">
-                                                                            <select id="agencia" name="agencia" class="form-select select2" required>
-                                                                            <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
-                                                                            </select>
-                                                                            <div class="invalid-feedback">
-                                                                                Preencha o campo agência
+                                                                    @if($isAdminAg > 0)
+                                                                        <div class="col-lg-6">
+                                                                            <label for="inputS" class="col-sm-2 form-label">Usuario(s)</label>
+                                                                            <div class="">
+                                                                                <select class="select2-multiple-user form-control" name="agencia[]" multiple="multiple" required
+                                                                                    id="select2MultipleUser">
+                                                                                    @foreach ($users['agenciasUsuarios'] as $user )
+                                                                                        <option value="{{ $user->id }}" data-cor="#222">{{ $user->nome }}</option>
+                                                                                    @endforeach
+                                                                                </select>
+                                                                                <div class="invalid-feedback">
+                                                                                    Preencha o campo marca
+                                                                                </div>
+                                                                            </div>
+                                                                            
+                                                                        </div>
+                                                                        @else
+                                                                        <div class="col-lg-6">
+                                                                            <label class="col-sm-2 form-label">Agência</label>
+                                                                            <div class="">
+                                                                                <select id="agencia" name="agencia" class="form-select select2" required>
+                                                                                <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
+                                                                                </select>
+                                                                                <div class="invalid-feedback">
+                                                                                    Preencha o campo agência
+                                                                                </div>
                                                                             </div>
                                                                         </div>
-                                                                    </div>
+                                                                    @endif
                                                                 </div>
                                                                 <div class="mb-3 row">
                                                                     <div class="col-lg-6">
                                                                         <label for="inputS" class="col-sm-2 form-label">Marcas</label>
                                                                         <div class="">
-                                                                            <select placeholder="a" class="select2-multiple form-control" name="marcas[]" multiple="multiple" required
+                                                                            <select class="select2-multiple form-control" name="marcas[]" multiple="multiple" required
                                                                                 id="select2Multiple">
                                                                                 @foreach ($marcas as $marca )
                                                                                     <option value="{{ $marca->id }}" data-cor="{{ $marca->cor }}">{{ $marca->nome }}</option>
@@ -265,7 +287,7 @@
                 minimumResultsForSearch: Infinity
             });
 
-            const form = $("#formEdut");
+            const form = $("#formEdit");
             const submitButton = $("#submitButtonEdit");
             submitButton.click(function(event) {
                 if (form[0].checkValidity()) {
@@ -301,13 +323,26 @@
                 },
             });
 
+            $('.select2-multiple-user').select2({
+                placeholder: "Selecione seu(s) usuario(s)",
+                allowClear: true,
+                templateSelection: function (data, container) {
+                    var cor = $(data.element).data('cor'); // pega a cor do data-cor
+                    $(container).css("background-color", cor); // define a cor de fundo do option
+                    return data.text;
+                },
+            });
+
             // //setores pré-selecionado
 
             let ids = @json($marcasIds);
+            let idsUser = @json($usersIds);
+
             let demandaInicio = @json($demanda->inicio);
             let demandaFinal = @json($demanda->final);
 
             $('#select2Multiple').val(ids).trigger('change');
+            $('#select2MultipleUser').val(idsUser).trigger('change');
             
             //calendário
 

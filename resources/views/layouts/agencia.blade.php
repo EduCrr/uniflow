@@ -67,6 +67,23 @@
                         <i class="mdi mdi-home me-2 font-size-16"></i> <a class="{{ Request::is('minhas-pautas') ? 'btnActive' : 'btnNotActive'  }}" href="{{route('Pautas')}}">Jobs</a>
                     </button>
                 </div>
+                @if($isAdminAg > 0)
+                    <div class="d-none d-sm-block ms-1">
+                        <div class="dropdown">
+                            <button type="button" class="btn header-item waves-effect" data-bs-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                                <i class="mdi mdi-plus-box-multiple"></i>
+                                <span class="d-none d-xl-inline-block ms-1 {{ Request::is('dashboard/jobs', 'dashboard/criar','dashboard/job/*' ) ? 'btnActive' : 'btnNotActive'  }}">Criar Jobs</span>
+                                <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a href="{{route('Job.criar')}}" class="dropdown-item">Criar novo job </a>
+                                <a href="{{route('Jobs')}}" class="dropdown-item">Filtrar jobs </a>
+                                <a href="{{route('Etapas')}}" class="dropdown-item">Etapa 2 </a>
+                            </div>
+                        </div>
+                    </div>
+                @endif
                 <div class="d-none d-lg-inline-block">
                     <button
                         type="button"
@@ -237,6 +254,19 @@
                         </a>
                     </li>
 
+                    @if($isAdminAg > 0)
+                        <li>
+                            <a href="javascript: void(0);" class="has-arrow waves-effect">
+                                <i class="mdi mdi-book me-2 font-size-16"></i>
+                                <span>Criar job</span>
+                            </a>
+                            <ul class="sub-menu" aria-expanded="false">
+                                <li><a href="{{route('Job.criar')}}" class="dropdown-item">Criar novo job </a></li>
+                                <li> <a href="{{route('Jobs')}}" class="dropdown-item">Filtrar jobs </a></li>
+                                <li> <a href="{{route('Etapas')}}" class="dropdown-item">Etapa 2 </a></li>
+                            </ul>
+                        </li>
+                    @endif
                     <li>
                         <a href="{{ route('Usuario') }}" class="waves-effect">
                             <i class="mdi mdi-cog me-2 font-size-16"></i> 
@@ -249,10 +279,14 @@
         </div>
     </div>
      <!-- Left Sidebar End -->
-    <main>
+     <main>
         @yield('content')
     </main>
-
+    @if($isAdminAg > 0)
+        <a href="{{ route('Job.criar')}}" class="floatingBtn">
+            <i class="mdi mdi-plus-box-multiple"></i>
+        </a>
+    @endif
     <footer class="footer">
         <div class="container-fluid">
             <div class="row">

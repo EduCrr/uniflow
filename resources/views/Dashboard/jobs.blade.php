@@ -1,4 +1,9 @@
-@extends('layouts.colaborador')
+@php
+    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
+@endphp
+
+@extends($layout)
+
 @section('title', 'Meus jobs')
 
 @section('css')
@@ -60,16 +65,16 @@
                                                 </select>
                                             </div>
                                         
-                                        
-                                            <div class="mb-0 adjustSelects" >
-                                                <select class="form-select select2" name="agencia_id">
-                                                    <option selected="true" value="0">Agência</option>
-                                                    @foreach ($agencies as $agencie )
-                                                            <option @if($agencia == $agencie->id) selected @endif value="{{ $agencie->id }}">{{ $agencie->nome }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        
+                                            @if($isAdminAg == 0)
+                                                <div class="mb-0 adjustSelects" >
+                                                    <select class="form-select select2" name="agencia_id">
+                                                        <option selected="true" value="0">Agência</option>
+                                                        @foreach ($agencies as $agencie )
+                                                                <option @if($agencia == $agencie->id) selected @endif value="{{ $agencie->id }}">{{ $agencie->nome }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            @endif
                                         
                                             <div class="mb-0 adjustSelects" >
                                                 <select class="form-select select2" name="in_tyme">
@@ -115,14 +120,18 @@
                                                                 <th>Status</th>
                                                                 <th>Prazo inicial</th>
                                                                 <th>Prazo de entrega</th>
-                                                                <th>Agência</th>
+                                                                @if($isAdminAg == 0)
+                                                                    <th>Agência</th>
+                                                                    @else
+                                                                    <th>Usuario(s)</th>
+                                                                @endif
                                                                 <th>Marca(s)</th>
                                                                 <th>Ações</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($demandas as $key => $demanda )
-                                                                @if ($demanda['agencia'])
+                                                                @if ($demanda['agencia'] || $isAdminAg > 0)
                                                                 <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
                                                                     <td class="title">
                                                                         {{ $demanda->titulo }}
@@ -167,9 +176,17 @@
                                                                             <span class="atrasado">ATRASADO!</span>
                                                                         @endif
                                                                     </td>
-                                                                    <td>  
-                                                                        {{ $demanda['agencia']->nome }}
-                                                                    </td>
+                                                                    @if($isAdminAg == 0)
+                                                                        <td>  
+                                                                            {{ $demanda['agencia']->nome }}
+                                                                        </td>
+                                                                        @else
+                                                                        <td>  
+                                                                            @foreach ($demanda['demandasUsuario'] as $marca )
+                                                                                <span>{{ $marca->nome }}</span>
+                                                                            @endforeach
+                                                                        </td>
+                                                                    @endif
                                                                     <td>  
                                                                         @foreach ($demanda['marcas'] as $marca )
                                                                             <span>{{ $marca->nome }}</span>

@@ -69,7 +69,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="mb-3 row  agencia">
+                                        <div class="mb-3 row agencia">
                                             <div class="col-lg-12  mo-b-15">
                                                <label for="agencia" class="form-label pt-0">Agência</label>
                                                
@@ -80,6 +80,14 @@
                                                 </select>
                                                 <div class="invalid-feedback">
                                                     Preencha o campo agência
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 row agencia_admin">
+                                            <div class="col-lg-12  mo-b-15 alingCheckBox">
+                                               <span>Adicionar como admin</span>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input getAdminAgValue" type="checkbox" name="adminAg" value="true">
                                                 </div>
                                             </div>
                                         </div>
@@ -170,6 +178,17 @@
 
         $(document).ready(function() {
 
+            $('.getAdminAgValue').on('click', function() {
+                let is_checked = $(this).prop('checked');
+                if(is_checked){
+                    $('.marcas').removeClass('hidden'); 
+                    $('#select2Multiple').attr("required", "true").prop('disabled', false);
+                }else{
+                    $('.marcas').addClass('hidden'); 
+                    $('#select2Multiple').attr("required", "false").prop('disabled', true);
+                }
+            });
+
             $('#estados').on('change', function() {
                 id = this.value;
 
@@ -210,6 +229,7 @@
 
             $('#tipo').on('change', function() {
                 tipoValue = $('select[name=tipo] option').filter(':selected').val();
+                $('.getAdminAgValue').prop('checked', false);
                 getFields();
             });
 
@@ -220,6 +240,7 @@
                 $('#select2Multiple').attr("required", "false").prop('disabled', true);
                 $('#select2Multiple-ag').attr("required", "false").prop('disabled', true);
                 $('#agencia').attr("required", "false").prop('disabled', true);
+                $('.agencia_admin').addClass('hidden');
             }
             
            function getFields(){
@@ -237,6 +258,8 @@
                     $('#agencia').attr("required", "true").prop('disabled', false);
                     $('.marcas').addClass('hidden');
                     $('.agencias').addClass('hidden');
+                    $('.agencia_admin').toggleClass('hidden');
+
                 }else if(tipoValue === 'admin'){
                     removeFields()
                 }

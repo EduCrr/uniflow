@@ -17,6 +17,8 @@ use Carbon\Carbon;
 use App\Models\DemandaTempo;
 use Illuminate\Support\Facades\Validator;
 Use Alert;
+use App\Models\AgenciaUsuario;
+use App\Models\DemandaUsuario;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
@@ -136,7 +138,7 @@ class ColaboradorController extends Controller
 
     public function jobs(Request $request){
         $user = Auth::User();
-
+        $agencies = null;
         $search = $request->search;
         $aprovada = $request->aprovada;
         $priority = $request->category_id;
@@ -148,7 +150,7 @@ class ColaboradorController extends Controller
         $demandas = Demanda::where('etapa_1', 1)->where('etapa_2', 1)->where('excluido', null)->where('criador_id', $user->id)->with(['marcas' => function ($query) {
         $query->where('excluido', null);
         }])->with(['agencia' => function ($query) {
-        $query->where('excluido', null);
+            $query->where('excluido', null);
         }])->with(['demandasReabertas' => function ($query) {
             $query->where('excluido', null);
             $query->where('finalizado', null);
@@ -157,6 +159,10 @@ class ColaboradorController extends Controller
         }])->withCount(['notificacoes as count_notificacoes' => function ($query) use ($user) {
             $query->where('visualizada', 0)->where('usuario_id', $user->id)->where('clicado', null);
         }])->orderBy('id', 'DESC');
+
+        if($user->tipo === 'agencia'){
+            $demandas->with('demandasUsuario');
+        }
 
         if($search){
             $demandas->where('titulo', 'like', "%$search%");
@@ -205,7 +211,6 @@ class ColaboradorController extends Controller
             $dateRange = '';
         }
 
-
         if($priority){
             $demandas->where('prioridade', $priority);
         }
@@ -217,12 +222,17 @@ class ColaboradorController extends Controller
             });
         }
 
-        if($agencia != '0' && $agencia){
-            $demandas->whereHas('agencia', function($query)  use($agencia){
-                $query->where('agencias.id', $agencia);
-                $query->where('agencias.excluido', null );
-            });
+        if($user->tipo === 'colaborador'){
+
+            if($agencia != '0' && $agencia){
+                $demandas->whereHas('agencia', function($query)  use($agencia){
+                    $query->where('agencias.id', $agencia);
+                    $query->where('agencias.excluido', null );
+                });
+            }
+            $agencies = $user->colaboradoresAgencias()->where('excluido', null)->get();
         }
+
 
         $demandas = $demandas->paginate(15)->withQueryString();
 
@@ -261,8 +271,7 @@ class ColaboradorController extends Controller
         // $brands = Marca::where('excluido', null)->get();
         $brands = User::where('id', $user->id)->with('marcas')->first();
         // $agencies = Agencia::where('excluido', null)->get();
-        $agencies = $user->colaboradoresAgencias()->where('excluido', null)->get();
-    
+
         return view('Dashboard/jobs', [
             'demandas' => $demandas,
             'search' => $search,
@@ -281,17 +290,25 @@ class ColaboradorController extends Controller
     public function create(){
         $user = Auth::User();
         $dataAtual = Carbon::now();
-
+        $users = null;
         $userInfos = User::where('id', $user->id)->where('excluido', null)->with(['marcas' => function ($query) {
         $query->where('excluido', null);
         }])->with(['colaboradoresAgencias' => function ($query) {
-            $query->where('excluido', null);
-            }])->first();
+        $query->where('excluido', null);
+        }])->with('usuariosAgencias')->first();
 
-
+        if($user->tipo === 'agencia'){
+            $users = Agencia::where('id', $userInfos['usuariosAgencias'][0]->id)
+            ->with(['agenciasUsuarios' => function($query) {
+                $query->where('excluido', null);
+            }])->where('excluido', null)
+            ->first();
+        }
+        
         return view('Dashboard/criar', [
             'userInfos' => $userInfos,
-            'dataAtual' => $dataAtual
+            'dataAtual' => $dataAtual,
+            'users' => $users
         ]);
         
     }
@@ -338,7 +355,11 @@ class ColaboradorController extends Controller
             $newJob->titulo = $request->titulo .' '.$request->id;
             $newJob->criador_id = $user->id;
             $newJob->briefing = '<p><strong>Metas e objetivos</strong></p><p><em>Em uma frase, descrever o que precisamos resolver, qual o problema a ser resolvido? E qual o objetivo, onde queremos chegar?</em></p><p><strong>Pe&ccedil;as necess&aacute;rias</strong></p><p><em><strong>&nbsp;</strong>Existe mais de uma pe&ccedil;a para ser produzida? Este &eacute; o momento de descrev&ecirc;-la.</em></p><p><strong>Formato (Item para selecionar impresso ou digital, e ainda campo para palavras.)&nbsp;</strong></p><p><em>Existe alguma formata&ccedil;&atilde;o especial (com dobra, com faca especial....)? Como o arquivo deve ser entregue (JPG, PNG, v&iacute;deo, PDF impress&atilde;o, PDF edit&aacute;vel, etc.)</em></p><p><strong>Dimens&otilde;es (n&atilde;o &eacute; item obrigat&oacute;rio)</strong></p><p><em>Medidas (cm ou px), quando necess&aacute;rio.</em></p><p><strong>Descri&ccedil;&atilde;o</strong></p><p><em>Descreva sua interpreta&ccedil;&atilde;o do briefing, citando todos os itens das etapas anteriores. Traga exemplos, deixe mais claro suas expectativas e objetivos.</em></p>';
-            $newJob->agencia_id = $request->agencia;
+            if($user->tipo === 'agencia'){
+                $newJob->agencia_id = null;
+            }else{
+                $newJob->agencia_id = $request->agencia;
+            }
             $newJob->inicio = $request->inicio;
             $newJob->final = $request->final;
             $newJob->prioridade = $request->prioridade;
@@ -348,6 +369,7 @@ class ColaboradorController extends Controller
             $newJob->save();
 
             $marcasIds = $request->marcas;
+            $userAgIds = $request->agencia;
 
             foreach($marcasIds as $item){
                 $demandaMarcas = new DemandaMarca();
@@ -356,6 +378,14 @@ class ColaboradorController extends Controller
                 $demandaMarcas->save();
             }
 
+            if($user->tipo === 'agencia'){
+                foreach($userAgIds as $item){
+                    $demandaMarcas = new DemandaUsuario();
+                    $demandaMarcas->usuario_id = $item;
+                    $demandaMarcas->demanda_id = $newJob->id;
+                    $demandaMarcas->save();
+                }
+            }
             // return back()->with('success', 'Etapa 1 criada' );  
             return redirect()->route('Job.criar_etapa_2', ['id' => $newJob->id])->with('success', 'Etapa 1 criada com sucesso!');
 
@@ -365,19 +395,38 @@ class ColaboradorController extends Controller
 
     public function createStage2($id){
         $user = Auth::User();
+        $users = null;
+        $agencia = null;
         $demanda = Demanda::where('id', $id)->with(['marcas' => function ($query) {
         $query->where('excluido', null);
-        }])->first();
+        }])->with('demandasUsuario')->first();
         
         $marcas = $user->marcas()->whereNull('excluido')->get();
 
+        if($user->tipo === 'agencia'){
+            $getAgId = $user->usuariosAgencias()->first();
+            $users = Agencia::where('id', $getAgId->id)
+            ->with(['agenciasUsuarios' => function($query) {
+                $query->where('excluido', null);
+            }])->where('excluido', null)
+            ->first();
+        }
+
         $marcasIds = array();
+        $usersIds = array();
  
         foreach($demanda['marcas'] as $marca){
             array_push($marcasIds, $marca->id);
         }
- 
-        $agencia = Agencia::where('id', $demanda->agencia_id)->where('excluido', null)->first();
+
+        foreach($demanda['demandasUsuario'] as $user){
+            array_push($usersIds, $user->id);
+        }
+        
+        if($user->tipo === 'colaborador'){
+            $agencia = Agencia::where('id', $demanda->agencia_id)->where('excluido', null)->first();
+        }
+
         if($demanda){
             if($demanda->etapa_2 == 0){
                 return view('Dashboard/criar-etapa-2', [
@@ -385,6 +434,8 @@ class ColaboradorController extends Controller
                     'marcas' => $marcas,
                     'marcasIds' => $marcasIds,
                     'agencia' => $agencia,
+                    'usersIds' => $usersIds,
+                    'users' => $users
                 ]);
             }else{
                 return redirect('/dashboard');
@@ -393,9 +444,236 @@ class ColaboradorController extends Controller
         
     }
 
+    // public function createActionStage2(Request $request, $id){
+    //     $user = Auth::User();
+    //     $validator = Validator::make($request->all(),[
+    //         'titulo' => 'required|min:3',
+    //         'agencia' => 'required',
+    //         'inicio' => 'required',
+    //         'final' => 'required',
+    //         'marcas' => 'required',
+    //         'prioridade' => 'required',
+    //         'briefing' => 'required|min:3',       
+             
+    //         ],[
+    //         'titulo.required' => 'Preencha o campo título.',
+    //         'titulo.min' => 'O campo título deve ter pelo menos 3 caracteres.',
+    //         'agencia.required' => 'Preencha o campo agencia.',
+    //         'inicio.required' => 'Preencha o campo data inicial.',
+    //         'final.required' => 'Preencha o campo data final.',
+    //         'marcas.required' => 'Preencha o campo setor.',
+    //         'prioridade.required' => 'Preencha o campo prioridade.',
+    //         'briefing.required' => 'Preencha o campo briefing.',
+    //         'briefing.min' => 'O campo briefing deve ter pelo menos 3 caracteres.',
+    //     ]
+    // );
+        
+    //     if($validator->fails()) {
+    //         return back()->with('error', $validator->messages()->all()[0])->withInput();
+    //     }
+
+    //     if(!$validator->fails()){
+
+    //         $cor = null;
+    //         if($request->prioridade == '1'){
+    //             $cor = '#3dbb3d';
+    //         }else if($request->prioridade == '5'){
+    //             $cor = '#f9bc0b';
+    //         }else if($request->prioridade == '7'){
+    //             $cor = '#fb3232';
+    //         }else if($request->prioridade == '10'){
+    //             $cor = '#000';
+    //         }
+
+    //         $demanda = Demanda::where('excluido', null)->find($id);
+
+    //         if($request->titulo){
+    //             $demanda->titulo = $request->titulo;
+    //         }
+            
+    //         if($request->drive){
+    //             $demanda->drive = $request->drive;
+    //         }
+
+    //         if($request->inicio){
+    //             $demanda->inicio = $request->inicio;
+    //         }
+
+    //         if($request->final){
+    //             $demanda->final = $request->final;
+    //         }
+
+    //         if($request->prioridade){
+    //             $demanda->prioridade = $request->prioridade;
+    //         }
+
+    //         if($request->cor){
+    //             $demanda->cor = $cor;
+    //         }
+
+    //         if($user->tipo === 'colaborador'){
+    //             if($request->agencia){
+    //                 $demanda->agencia_id = $request->agencia;
+    //             }
+    //         }else if($user->tipo === 'agencia'){
+
+    //             if($request->agencia){
+    //                 $usersIds = $request->agencia;
+    //                 DemandaUsuario::where('demanda_id', $id)->whereNotIn('usuario_id', $usersIds)->delete();
+                    
+    //                 foreach($usersIds as $item){
+    //                     $demandaUsuario = DemandaUsuario::updateOrCreate([
+    //                         'usuario_id' => $item,
+    //                         'demanda_id' => $id
+    //                     ], [
+    //                         'usuario_id' => $item,
+    //                         'demanda_id' => $demanda->id,
+    //                     ]);
+                    
+    //                 }
+    //             }
+               
+    //         }
+            
+    //         if($request->marcas){
+                
+    //             $marcasIds = $request->marcas;
+    //             DemandaMarca::where('demanda_id', $id)->whereNotIn('marca_id', $marcasIds)->delete();
+                
+    //             foreach($marcasIds as $item){
+    //                 $demandaMarca = DemandaMarca::updateOrCreate([
+    //                     'marca_id' => $item,
+    //                     'demanda_id' => $id
+    //                 ], [
+    //                     'marca_id' => $item,
+    //                     'demanda_id' => $demanda->id,
+    //                 ]);
+                
+    //             }
+    //         }
+
+    //         if ($request->hasFile('arquivos')) {
+    //             $arqs = $request->file('arquivos');
+                
+    //             foreach($arqs as $item){
+    //                 $extension = $item->extension();
+    //                 $file = $item->getClientOriginalName();
+    //                 $fileName = pathinfo($file, PATHINFO_FILENAME);
+    //                 $photoName = $fileName . '.' . $extension;
+    //                 $destImg = public_path('assets/images/files');
+    //                 $i = 1;
+            
+    //                 while(file_exists($destImg . '/' . $photoName)){
+    //                     $photoName = $fileName . '_' . $i . '.' . $extension;
+    //                     $i++;
+    //                 }
+            
+    //                 $item->move($destImg, $photoName);
+            
+    //                 $newPostPhoto = new DemandaImagem();
+    //                 $newPostPhoto->demanda_id =  $demanda->id;
+    //                 $newPostPhoto->imagem = $photoName;
+    //                 $newPostPhoto->usuario_id = $user->id;
+    //                 $newPostPhoto->criado = date('Y-m-d H:i:s');
+    //                 $newPostPhoto->save();
+    //             }
+    //         }
+
+    //         // $demanda->etapa_2 = 1;
+    //         $demanda->save();
+
+    //         $newTimeLine = new LinhaTempo();
+    //         $newTimeLine->demanda_id = $demanda->id;
+    //         $newTimeLine->status = 'Job cadastrado';
+    //         $newTimeLine->code = 'criado';
+    //         $newTimeLine->usuario_id = $user->id;
+    //         $newTimeLine->criado = date('Y-m-d H:i:s');
+    //         $newTimeLine->save();
+
+
+    //         // if($request->all('input') !== null){
+    //         //     $usuarioDemandaData = $request->all('input');
+    //         //     if($usuarioDemandaData['input'] !== null){
+    //         //          foreach($usuarioDemandaData['input'] as $item){
+    //         //             $demandaUsuario = DemandaUsuario::updateOrCreate([
+    //         //                 'usuario_id' => $item['usuario_id'],
+    //         //                 'demanda_id' => $demanda->id,
+    //         //             ], [
+                            
+    //         //                 'tarefa' => $item['tarefa'],
+    //         //                 'inicio' => $item['inicio'],
+    //         //                 'status' => 'aberto',
+    //         //                 'final' => $item['final'],
+    //         //                 'usuario_id' => $item['usuario_id'],
+    //         //                 'demanda_id' => $demanda->id,
+                            
+    //         //             ]);
+    //         //         }
+    //         //     }
+               
+    //         // }
+
+    //         //notificar criador
+
+    //         $criadorNotificacao = new Notificacao();
+    //         $criadorNotificacao->demanda_id = $demanda->id;
+    //         $criadorNotificacao->usuario_id = $user->id;
+    //         $criadorNotificacao->conteudo = 'Novo job foi criado.';
+    //         $criadorNotificacao->criado = date('Y-m-d H:i:s');
+    //         $criadorNotificacao->visualizada = '0';
+    //         $criadorNotificacao->tipo = 'criada';
+    //         $criadorNotificacao->save();
+
+    //         //send e-mail
+
+    //         $actionLink = route('Job', ['id' => $demanda->id]);
+    //         $bodyEmail = 'Seu novo job foi criado com sucesso. Acesse pelo link logo abaixo.';
+    //         $titleEmail = 'Novo job criado';
+
+    //          //notificar agencia
+
+    //         $agenciaNotificacao = new Notificacao();
+    //         $agenciaNotificacao->demanda_id = $demanda->id;
+    //         $agenciaNotificacao->agencia_id = $request->agencia;
+    //         $agenciaNotificacao->conteudo = 'Novo job foi criado.';
+    //         $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+    //         $agenciaNotificacao->visualizada = '0';
+    //         $agenciaNotificacao->tipo = 'criada';
+    //         $agenciaNotificacao->save();
+            
+    //         //criador
+
+    //         // Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $user->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($request, $user) {
+    //         //     $message->from('envios@fmfm.com.br')
+    //         //     ->to($user->email)
+    //         //     ->bcc('agenciacriareof@gmail.com')
+    //         //     ->subject('Novo job criado');
+    //         // });
+
+    //         //agencia
+
+    //         $agencies = Agencia::where('id', $request->agencia)->with(['agenciasUsuarios' => function ($query) {
+    //         $query->where('excluido', null);
+    //         $query->select('email', 'nome');
+    //         }])->first();
+
+    //         // foreach($agencies['agenciasUsuarios'] as $item){
+    //         //     Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $item->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($request, $item) {
+    //         //         $message->from('envios@fmfm.com.br')
+    //         //         ->to($item->email)
+    //         //         ->bcc('agenciacriareof@gmail.com')
+    //         //         ->subject('Novo job criado');
+    //         //     });
+    //         // }
+       
+    //         return redirect()->route('Job', ['id' => $demanda->id])->with('success', 'Job criado com sucesso!');
+    //     }
+
+    // }
+
     public function createActionStage2(Request $request, $id){
         $user = Auth::User();
-        
+        $agencies = null;
         $validator = Validator::make($request->all(),[
             'titulo' => 'required|min:3',
             'agencia' => 'required',
@@ -462,18 +740,33 @@ class ColaboradorController extends Controller
             }
 
             if($request->agencia){
-                $demanda->agencia_id = $request->agencia;
+                if($user->tipo === 'colaborador'){
+                    $demanda->agencia_id = $request->agencia;
+                }else if($user->tipo === 'agencia'){
+                    $usersIds = $request->agencia;
+                    DemandaUsuario::where('demanda_id', $id)->whereNotIn('usuario_id', $usersIds)->delete();
+                    
+                    foreach($usersIds as $item){
+                        $demandaUsuario = DemandaUsuario::updateOrCreate([
+                            'usuario_id' => $item,
+                            'demanda_id' => $demanda->id,
+                        ], [
+                            'usuario_id' => $item,
+                            'demanda_id' => $demanda->id,
+                        ]);
+                    
+                    }   
+                }
             }
 
             if($request->marcas){
-                
                 $marcasIds = $request->marcas;
                 DemandaMarca::where('demanda_id', $id)->whereNotIn('marca_id', $marcasIds)->delete();
                 
                 foreach($marcasIds as $item){
                     $demandaMarca = DemandaMarca::updateOrCreate([
                         'marca_id' => $item,
-                        'demanda_id' => $id
+                        'demanda_id' => $demanda->id,
                     ], [
                         'marca_id' => $item,
                         'demanda_id' => $demanda->id,
@@ -560,16 +853,8 @@ class ColaboradorController extends Controller
             $bodyEmail = 'Seu novo job foi criado com sucesso. Acesse pelo link logo abaixo.';
             $titleEmail = 'Novo job criado';
 
-             //notificar agencia
-
-            $agenciaNotificacao = new Notificacao();
-            $agenciaNotificacao->demanda_id = $demanda->id;
-            $agenciaNotificacao->agencia_id = $request->agencia;
-            $agenciaNotificacao->conteudo = 'Novo job foi criado.';
-            $agenciaNotificacao->criado = date('Y-m-d H:i:s');
-            $agenciaNotificacao->visualizada = '0';
-            $agenciaNotificacao->tipo = 'criada';
-            $agenciaNotificacao->save();
+            //notificar agencia
+           
             
             //criador
 
@@ -581,21 +866,36 @@ class ColaboradorController extends Controller
             // });
 
             //agencia
+            
+            if($user->tipo === 'colaborador'){
+                $agencies = Agencia::where('id', $request->agencia)->with(['agenciasUsuarios' => function ($query) {
+                $query->where('excluido', null);
+                $query->select('email', 'nome');
+                }])->first();
 
-            $agencies = Agencia::where('id', $request->agencia)->with(['agenciasUsuarios' => function ($query) {
-            $query->where('excluido', null);
-            $query->select('email', 'nome');
-            }])->first();
+                $agenciaNotificacao = new Notificacao();
+                $agenciaNotificacao->demanda_id = $demanda->id;
+                $agenciaNotificacao->agencia_id = $request->agencia;
+                $agenciaNotificacao->conteudo = 'Novo job foi criado.';
+                $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                $agenciaNotificacao->visualizada = '0';
+                $agenciaNotificacao->tipo = 'criada';
+                $agenciaNotificacao->save();
 
-            // foreach($agencies['agenciasUsuarios'] as $item){
-            //     Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $item->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($request, $item) {
-            //         $message->from('envios@fmfm.com.br')
-            //         ->to($item->email)
-            //         ->bcc('agenciacriareof@gmail.com')
-            //         ->subject('Novo job criado');
-            //     });
-            // }
-       
+                 // foreach($agencies['agenciasUsuarios'] as $item){
+                //     Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $item->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($request, $item) {
+                //         $message->from('envios@fmfm.com.br')
+                //         ->to($item->email)
+                //         ->bcc('agenciacriareof@gmail.com')
+                //         ->subject('Novo job criado');
+                //     });
+                // }
+        
+            }
+
+            //usuario aquiiiiiiiiiii
+            
+           
             return redirect()->route('Job', ['id' => $demanda->id])->with('success', 'Job criado com sucesso!');
         }
 
@@ -1245,6 +1545,7 @@ class ColaboradorController extends Controller
         if($demanda){
             $demanda->excluido = date('Y-m-d H:i:s');
             $demanda->save();
+            $deleteMarcaDemanda = DemandaMarca::where('demanda_id', $demanda->id)->delete();
             $deleteNotifications = Notificacao::where('demanda_id', $id)->delete();
             return back()->with('success', 'Job excluído com sucesso.' );  
         }else{

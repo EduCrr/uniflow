@@ -1,4 +1,8 @@
-@extends('layouts.colaborador')
+@php
+    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
+@endphp
+
+@extends($layout)
 @section('title', 'Etapa 2')
 
 @section('css')
@@ -121,7 +125,7 @@
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($demandas as $key => $demanda )
-                                                                @if ($demanda['agencia'])
+                                                                @if ($demanda['agencia'] || $isAdminAg > 0)
                                                                 <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job.criar_etapa_2', ['id' => $demanda->id])}}">
                                                                     <td class="title">
                                                                         {{ $demanda->titulo }}

@@ -95,4 +95,11 @@ class Demanda extends Model
         return $this->belongsTo(Agencia::class);
     }
 
+    public function demandasUsuario(){
+        return $this->belongsToMany(User::class, 'demandas_usuarios', 'demanda_id', 'usuario_id');
+    }
+
+    public function marcasDemandas(){
+        return $this->belongsToMany(Marca::class, 'demandas_marcas', 'demanda_id', 'marca_id');
+    }
 }

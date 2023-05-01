@@ -1,4 +1,8 @@
-@extends('layouts.colaborador')
+@php
+    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
+@endphp
+
+@extends($layout)
 @section('title', 'Editar job '. $demanda->id)
 
 @section('css')

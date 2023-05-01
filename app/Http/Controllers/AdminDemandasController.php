@@ -27,6 +27,7 @@ use App\Exports\DemandasExport;
 use App\Exports\DemandasExportJobs;
 use App\Exports\DemandasExportPrazos;
 use App\Models\DemandaMarca;
+use App\Models\AdminAgencia;
 
 class AdminDemandasController extends Controller
 {   
@@ -490,6 +491,13 @@ class AdminDemandasController extends Controller
                 $agencyUser->usuario_id = $createUser->id;
                 $agencyUser->agencia_id = $request->agencia_id;
                 $agencyUser->save();
+                
+                if($request->adminAg == true){
+                    $adminAg = new AdminAgencia();
+                    $adminAg->usuario_id =  $createUser->id;
+                    $adminAg->save();
+                }
+
             }
 
             return back()->with('success', 'Usuário criado com sucesso.' );  
@@ -567,7 +575,9 @@ class AdminDemandasController extends Controller
     }
     
     public function userEdit($id){
-        $usuario = User::where('id', $id)->where('excluido', null)->with('marcas')->with('usuariosAgencias')->with('colaboradoresAgencias')->first();
+        $usuario = User::where('id', $id)->where('excluido', null)->with('marcas')->with('usuariosAgencias')->with('colaboradoresAgencias')->withCount(['adminUserAgencia as count_userAg' => function ($query) {
+            $query->where('excluido', null);
+        }])->first();
         $idsBrands = [];
         $idsAgencys  = [];
 
@@ -695,6 +705,9 @@ class AdminDemandasController extends Controller
 
     public function userEditAction(Request $request, $id){
         $user = User::where('id', $id)->where('excluido', null)->first();
+        $errorDemanda = false;
+        $verifyErrorMarca = '';
+        $verifyErrorAg = '';
         $validator = Validator::make($request->all(),[
             'nome' => 'required|min:3',
             'password' => 'nullable|min:3|confirmed',
@@ -768,56 +781,13 @@ class AdminDemandasController extends Controller
                 if($user->tipo === 'colaborador'){
 
                     //verificacao e jobs
-
+                   
                     if($request->marcas){
-                        
-                        $marcasColaborador = MarcaUsuario::select('marca_id')->where('usuario_id', $user->id)->get();
-                        $erroDemanda = false;
-                        
-                        foreach($marcasColaborador as $item){
-                            // Verifica se há demandas associadas à agência
-                            $hasDemandas = DemandaMarca::where('marca_id', $item->marca_id)->exists();
-                        
-                            // Verifica se a agência não está presente em $request->agencias_colaboradores e também não está na cláusula whereNotIn em agencia_id
-                            if (!$hasDemandas && !in_array($item->marca_id, $request->marcas)) {
-                                // Remove a agência não presente em $request->agencias_colaboradores
-                                $marca = MarcaUsuario::where('usuario_id', $user->id)->where('marca_id', $item->marca_id)->delete();
-                            } else if ($hasDemandas && !in_array($item->marca_id, $request->marcas)) {
-                                $erroDemanda = true; // Marca a ocorrência do erro
-                            }
-                        }
-
-                        if ($erroDemanda) {
-                            foreach($request->marcas as $item){
-
-                                $brandsUser = MarcaUsuario::updateOrCreate([
-                                'marca_id' => $item,
-                                'usuario_id' => $user->id
-                                ], [
-                                    'marca_id' => $item,
-                                    'usuario_id' => $user->id,
-                                ]);
-    
-                            }
-                            return back()->with('error-ag-marca', 'Você não pode mudar de marca, pois esse usuário possui um job que não pode ser alterado.');
-                        }
-                        
-                        foreach($request->marcas as $item){
-
-                            $brandsUser = MarcaUsuario::updateOrCreate([
-                            'marca_id' => $item,
-                            'usuario_id' => $user->id
-                            ], [
-                                'marca_id' => $item,
-                                'usuario_id' => $user->id,
-                            ]);
-
-                        }
+                        $verifyErrorMarca = $this->helpUserAdminAge($user->id, $request->marcas);
                     }
 
                     if($request->agencias_colaboradores){
                         $colaboradorAgencia = AgenciaColaborador::select('agencia_id')->where('usuario_id', $user->id)->get();
-                        $erroDemanda = false; // Variável de controle para verificar se há demandas associadas à agência
                                         
                         foreach($colaboradorAgencia as $item){
                             // Verifica se há demandas associadas à agência
@@ -828,23 +798,10 @@ class AdminDemandasController extends Controller
                                 // Remove a agência não presente em $request->agencias_colaboradores
                                 $agencia = AgenciaColaborador::where('usuario_id', $user->id)->where('agencia_id', $item->agencia_id)->delete();
                             } else if ($hasDemandas && !in_array($item->agencia_id, $request->agencias_colaboradores)) {
-                                $erroDemanda = true; // Marca a ocorrência do erro
+                                $errorDemanda = true; // Marca a ocorrência do erro
                             }
                         }
-                    
-                        if ($erroDemanda) {
-                            foreach($request->agencias_colaboradores as $ag){
-                                $brandsUser = AgenciaColaborador::updateOrCreate([
-                                    'agencia_id' => $ag,
-                                    'usuario_id' => $user->id
-                                ], [
-                                    'agencia_id' => $ag,
-                                    'usuario_id' => $user->id,
-                                ]);
-                            }
-                            return back()->with('error-ag-col', 'Você não pode mudar de agência, pois esse usuário possui um job que não pode ser alterado.');
-                        }
-                    
+
                         foreach($request->agencias_colaboradores as $ag){
                             $brandsUser = AgenciaColaborador::updateOrCreate([
                                 'agencia_id' => $ag,
@@ -854,27 +811,96 @@ class AdminDemandasController extends Controller
                                 'usuario_id' => $user->id,
                             ]);
                         }
+                    
+                        if ($errorDemanda) {
+                            $verifyErrorAg = 'error';
+                        }
                     }
-
 
                 }else if($user->tipo === 'agencia'){
                     $agencyUser = AgenciaUsuario::where('usuario_id', $user->id)->first();
-                    
                     $hasDemandas = Demanda::where('agencia_id', $agencyUser->agencia_id)->where('excluido', null)->exists();
-                
+
+                    //admin agencia fazendo verificação no input switch
+                    $adminAg = AdminAgencia::where('usuario_id', $user->id)->first();
+                    if($request->adminAg == false && $adminAg){
+                        $adminAg->excluido = date('Y-m-d H:i:s');
+                        $adminAg->save();
+                    }else if($request->adminAg == true && $adminAg){
+                        $adminAg->excluido = null;
+                        $adminAg->save();
+                    }else{
+                        $newAdminAg = new AdminAgencia();
+                        $newAdminAg->usuario_id = $user->id;
+                        $newAdminAg->save();
+                    }
+
                     if (!$hasDemandas) {
                         $agencyUser->agencia_id = $request->agencia;
                         $agencyUser->save();
-                    }else if($hasDemandas &&  $request->agencia != $agencyUser->agencia_id ) {
-                        // Se houver demandas associadas, envia a mensagem de sessão indicando que a agência possui um job que não pode ser alterado
-                        return back()->with('error-ag', 'Você não pode mudar a agência, pois esse usuário possui um job que não pode ser alterado.');
+                    }else if($hasDemandas && $request->agencia != $agencyUser->agencia_id ) {
+                        $verifyErrorAg = 'error';
                     }
-                }
 
-                return back()->with('success', 'Editado com sucesso.' );  
+                    if($request->marcas){
+                      $verifyErrorMarca = $this->helpUserAdminAge($user->id, $request->marcas);
+                    }
+                    
+                }
+             
+                if ($verifyErrorAg === 'error' && $verifyErrorMarca === 'error') {
+                    return back()->with('error-ambas', 'Existem erros nas informações fornecidas. (Marca e Agência)');
+                } else if ($verifyErrorAg === 'error') {
+                    return back()->with('error-ag', 'Você não pode mudar a agência, pois já existe um job cadastrado nessa marca');
+                } else if ($verifyErrorMarca === 'error') {
+                    return back()->with('error-ag-marca', 'Você não pode mudar de marca, pois já existe um job cadastrado nessa agência.');
+                } else {
+                    return back()->with('success', 'Editado com sucesso.' );  
+                }
 
             }
         }
+    }
+
+    public function helpUserAdminAge($userId, $requestM){
+        $marcasColaborador = MarcaUsuario::select('marca_id')->where('usuario_id', $userId)->get();
+        $demandasByUser = Demanda::select('id')->where('criador_id', $userId)->get();
+        $idsDemandas = [];
+        $erroDemanda = false;
+
+        foreach($demandasByUser as $d){
+            array_push($idsDemandas, $d->id);
+        }
+
+        foreach($marcasColaborador as $item){
+            // Verifica se há demandas associadas à agência
+            $hasDemandas = DemandaMarca::where('marca_id', $item->marca_id)->whereIn('demanda_id', $idsDemandas)->exists();
+        
+            // Verifica se a agência não está presente em $request->agencias_colaboradores e também não está na cláusula whereNotIn em agencia_id
+            if (!$hasDemandas && !in_array($item->marca_id, $requestM)) {
+                // Remove a agência não presente em $request->agencias_colaboradores
+                $marca = MarcaUsuario::where('usuario_id', $userId)->where('marca_id', $item->marca_id)->delete();
+            } else if ($hasDemandas && !in_array($item->marca_id, $requestM)) {
+                $erroDemanda = true; // Marca a ocorrência do erro
+            }
+        }
+
+        foreach($requestM as $item){
+
+            $brandsUser = MarcaUsuario::updateOrCreate([
+            'marca_id' => $item,
+            'usuario_id' => $userId
+            ], [
+                'marca_id' => $item,
+                'usuario_id' => $userId
+            ]);
+
+        }
+
+        if ($erroDemanda) {
+           return 'error';
+        }
+       
     }
     
     //delete

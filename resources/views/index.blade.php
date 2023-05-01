@@ -6,13 +6,12 @@
 @endsection
 
 @section('content')
-
     <section>
         <div class="main-content">
             <div class="page-content">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-xl-12">
+                        <div class="col-xl-12">                            
                             <div class="card tableHome">
                                 <div class="card-body">
                                    <div class="changeDem">

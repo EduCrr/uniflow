@@ -1,4 +1,8 @@
-@extends('layouts.colaborador')
+@php
+    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
+@endphp
+
+@extends($layout)
 @section('title', 'Criar etapa 1')
 
 @section('css')
@@ -30,19 +34,35 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-lg-6">
-                                              <label for="agencia" class="col-sm-2 form-label">Agência</label>
-                                                <div class="">
-                                                     <select id="agencia" name="agencia" class="form-select select2" required>
-                                                        @foreach ($userInfos['colaboradoresAgencias'] as $agencia )
-                                                            <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                    <div class="invalid-feedback">
-                                                        Preencha o campo agência
+                                            @if($isAdminAg > 0)
+                                                <div class="col-lg-6">
+                                                    <label class="col-sm-2 form-label">Usuario(s)</label>
+                                                    <div class="">
+                                                        <select class="select2-multiple-users form-control my-select" name="agencia[]" multiple="multiple" required id="select2MultipleUsers">
+                                                            @foreach ($users['agenciasUsuarios'] as $userAg)
+                                                                <option  data-cor="{{ '#222' }}"  @if (!empty(old('agencia')) && in_array($marca->id, old('agencia'))) selected  @endif value="{{ $userAg->id }}">{{ $userAg->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo usuario
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            @else
+                                                <div class="col-lg-6">
+                                                    <label for="agencia" class="col-sm-2 form-label">Agência</label>
+                                                    <div class="">
+                                                        <select id="agencia" name="agencia" class="form-select select2" required>
+                                                            @foreach ($userInfos['colaboradoresAgencias'] as $agencia )
+                                                                <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Preencha o campo agência
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
                                         <div class="mb-3 row">
                                             <div class="col-lg-6">
@@ -62,7 +82,7 @@
                                             <div class="col-lg-6">
                                                 <label class="col-sm-2 form-label">Marca</label>
                                                 <div class="">
-                                                    <select placeholder="a" class="select2-multiple form-control my-select" name="marcas[]" multiple="multiple" required id="select2Multiple">
+                                                    <select class="select2-multiple form-control my-select" name="marcas[]" multiple="multiple" required id="select2Multiple">
                                                         @foreach ($userInfos['marcas'] as $marca )
                                                             <option @if (!empty(old('marcas')) && in_array($marca->id, old('marcas'))) selected  @endif value="{{ $marca->id }}" data-cor="{{ $marca->cor }}">{{ $marca->nome }}</option>
                                                         @endforeach
@@ -120,8 +140,6 @@
     <script src="{{ asset('assets/js/select2.js') }}" ></script>
 
     <script>
-
-
         
 
         $(document).ready(function() {
@@ -154,10 +172,19 @@
                     form.addClass("was-validated");
                 }
             });
-          
 
             $('.select2-multiple').select2({
                 placeholder: "Selecione seu(s) setor(es)",
+                allowClear: true,
+                templateSelection: function (data, container) {
+                    var cor = $(data.element).data('cor'); // pega a cor do data-cor
+                    $(container).css("background-color", cor); // define a cor de fundo do option
+                    return data.text;
+                },
+            });
+
+            $('.select2-multiple-users').select2({
+                placeholder: "Selecione seu(s) usuario(s)",
                 allowClear: true,
                 templateSelection: function (data, container) {
                     var cor = $(data.element).data('cor'); // pega a cor do data-cor

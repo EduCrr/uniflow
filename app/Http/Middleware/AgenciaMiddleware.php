@@ -22,7 +22,7 @@ class AgenciaMiddleware
             if (Auth::user()->tipo == 'agencia'){
                 return $next($request);
             }else{
-                return redirect()->route('login')->with('error', 'Você precisa efetuar o login para continuar.');
+                return redirect()->route('login')->with('error', 'Você não tem autorização para acessar essa página.');
             }
         }
     }

@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\PasswordReset;
 use App\Models\Estado;
 use App\Models\Cidade;
+use App\Models\Marca;
 use App\Models\InformacaoUsuario;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
-use DateTime;
-use DateInterval;
+use App\Models\MarcaUsuario;
+use App\Models\Demanda;
+use App\Models\DemandaMarca;
+use App\Models\Agencia;
+use App\Models\AgenciaColaborador;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
@@ -21,12 +25,25 @@ class UsuariosController extends Controller
 {
     public function index(Request $request){
         $user = Auth::User();
-        $loggedUser = User::where('excluido', null)->where('id', $user->id)->with(['usuariosAgencias' => function ($query) {
+        $loggedUser = User::where('excluido', null)->where('id', $user->id)->with('colaboradoresAgencias')->with(['usuariosAgencias' => function ($query) {
         $query->where('excluido', null);
         }])->with(['marcas' => function ($query) {
         $query->where('excluido', null);
         }])->with('estado')->first();
-        
+
+        $idsBrands = [];
+        $idsAgencys  = [];
+
+        foreach($loggedUser['marcas'] as $marca){
+            array_push($idsBrands, $marca->id);
+        }
+        foreach($loggedUser['colaboradoresAgencias'] as $ag){
+            array_push($idsAgencys, $ag->id);
+        }
+
+        $marcas = Marca::where('excluido', null)->get();
+        $agencias = Agencia::where('excluido', null)->get();
+
         $estados = Estado::all();
         $cidades = Cidade::select('id', 'nome', 'estado_id')->where('estado_id', $loggedUser['estado'][0]->id)->get();
         
@@ -35,7 +52,10 @@ class UsuariosController extends Controller
                 'user' => $loggedUser,
                 'estados' => $estados,
                 'cidades' => $cidades,
-               
+                'idsBrands' => $idsBrands,
+                'marcas' => $marcas,
+                'idsAgencys' => $idsAgencys,
+                'agencias' => $agencias,
             ]);
         }else{
             return view('login');
@@ -58,15 +78,13 @@ class UsuariosController extends Controller
    
 
     public function edit(Request $request, $id){
-        $imgs = $request->file('avatar');
-       
+
         $validator = Validator::make($request->all(),[
             'nome' => 'required|min:3',
             'password' => 'nullable|min:3|confirmed',
             'password_confirmation' => 'nullable|min:3',
             'estado_id' => 'required',
             'cidade_id' => 'required',
-           
             'avatar' => 'mimes:jpg,jpeg,png',
            
             ],[
@@ -86,8 +104,11 @@ class UsuariosController extends Controller
         if($validator->fails()) {
             return back()->with('error', $validator->messages()->all()[0])->withInput();
         }else{
-
+            $errorDemanda = false;
+            $verifyErrorMarca = '';
+            $verifyErrorAg = '';
             $user = User::where('id', $id)->first();
+
             $infoUser = InformacaoUsuario::where('usuario_id', $user->id)->first();
 
             if($user){
@@ -131,11 +152,109 @@ class UsuariosController extends Controller
                     
                 }
 
+                if($user->tipo === 'agencia'){
+                    if($request->marcas){
+                        $verifyErrorMarca = $this->helpUserAdminAge($user->id, $request->marcas);
+                    }
+                }   
+
+                if($user->tipo === 'colaborador'){
+
+                    //verificacao e jobs
+                   
+                    if($request->marcas){
+                        $verifyErrorMarca = $this->helpUserAdminAge($user->id, $request->marcas);
+                    }
+
+                    if($request->agencias_colaboradores){
+                        $colaboradorAgencia = AgenciaColaborador::select('agencia_id')->where('usuario_id', $user->id)->get();
+                                        
+                        foreach($colaboradorAgencia as $item){
+                            // Verifica se há demandas associadas à agência
+                            $hasDemandas = Demanda::where('criador_id', $user->id)->where('excluido', null)->where('agencia_id', $item->agencia_id)->exists();
+                                            
+                            // Verifica se a agência não está presente em $request->agencias_colaboradores e também não está na cláusula whereNotIn em agencia_id
+                            if (!$hasDemandas && !in_array($item->agencia_id, $request->agencias_colaboradores)) {
+                                // Remove a agência não presente em $request->agencias_colaboradores
+                                $agencia = AgenciaColaborador::where('usuario_id', $user->id)->where('agencia_id', $item->agencia_id)->delete();
+                            } else if ($hasDemandas && !in_array($item->agencia_id, $request->agencias_colaboradores)) {
+                                $errorDemanda = true; // Marca a ocorrência do erro
+                            }
+                        }
+
+                        foreach($request->agencias_colaboradores as $ag){
+                            $brandsUser = AgenciaColaborador::updateOrCreate([
+                                'agencia_id' => $ag,
+                                'usuario_id' => $user->id
+                            ], [
+                                'agencia_id' => $ag,
+                                'usuario_id' => $user->id,
+                            ]);
+                        }
+                    
+                        if ($errorDemanda) {
+                            $verifyErrorAg = 'error';
+                        }
+                    }
+
+                }
+
+                if ($verifyErrorAg === 'error' && $verifyErrorMarca === 'error') {
+                    return back()->with('error-ambas', 'Existem erros nas informações fornecidas. (Marca e Agência)');
+                } else if ($verifyErrorAg === 'error') {
+                    return back()->with('error-ag', 'Você não pode mudar a agência, pois já existe um job cadastrado nessa marca');
+                } else if ($verifyErrorMarca === 'error') {
+                    return back()->with('error-ag-marca', 'Você não pode mudar de marca, pois já existe um job cadastrado nessa agência.');
+                } else {
+                    return back()->with('success', 'Editado com sucesso.' );  
+                }
+
                 return back()->with('success', 'Editado com sucesso.' );  
 
             }
         }
     
+    }
+
+    public function helpUserAdminAge($userId, $requestM){
+        $marcasColaborador = MarcaUsuario::select('marca_id')->where('usuario_id', $userId)->get();
+        $demandasByUser = Demanda::select('id')->where('criador_id', $userId)->get();
+        $idsDemandas = [];
+        $erroDemanda = false;
+
+        foreach($demandasByUser as $d){
+            array_push($idsDemandas, $d->id);
+        }
+
+        foreach($marcasColaborador as $item){
+            // Verifica se há demandas associadas à agência
+            $hasDemandas = DemandaMarca::where('marca_id', $item->marca_id)->whereIn('demanda_id', $idsDemandas)->exists();
+        
+            // Verifica se a agência não está presente em $request->agencias_colaboradores e também não está na cláusula whereNotIn em agencia_id
+            if (!$hasDemandas && !in_array($item->marca_id, $requestM)) {
+                // Remove a agência não presente em $request->agencias_colaboradores
+                $marca = MarcaUsuario::where('usuario_id', $userId)->where('marca_id', $item->marca_id)->delete();
+            } else if ($hasDemandas && !in_array($item->marca_id, $requestM)) {
+                $erroDemanda = true; // Marca a ocorrência do erro
+            }
+        }
+
+        foreach($requestM as $item){
+
+            $brandsUser = MarcaUsuario::updateOrCreate([
+            'marca_id' => $item,
+            'usuario_id' => $userId
+            ], [
+                'marca_id' => $item,
+                'usuario_id' => $userId
+            ]);
+
+        }
+
+        if ($erroDemanda) {
+           return 'error';
+        }
+       
     }
 
     public function forgotPassword(){

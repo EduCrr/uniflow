@@ -89,32 +89,7 @@ Route::middleware(['auth', 'isAdmin'])->group(function(){
 //colaborador
 Route::middleware(['auth', 'isColaborador'])->group(function () {
     Route::get('/dashboard', [ColaboradorController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/jobs', [ColaboradorController::class, 'jobs'])->name('Jobs');
-    Route::get('/dashboard/etapas', [ColaboradorController::class, 'stages'])->name('Etapas');
-    Route::get('/dashboard/criar/etapa/1', [ColaboradorController::class, 'create'])->name('Job.criar');
-    Route::get('/dashboard/criar/job/{id}/etapa/2', [ColaboradorController::class, 'createStage2'])->name('Job.criar_etapa_2');
-    Route::get('/dashboard/deletar/job/{id}/etapa/1', [ColaboradorController::class, 'delteStage1'])->name('Job.deletar_etapa_1');
-    Route::get('/dashboard/job/editar/{id}', [ColaboradorController::class, 'edit'])->name('Job.editar');
-    Route::get('/dashboard/job/copiar/{id}', [ColaboradorController::class, 'copy'])->name('Job.copiar');
-    Route::get('/dashboard/delete/{id}', [ColaboradorController::class, 'delete'])->name('Job.delete');
-    Route::post('/dashboard/criar-action', [ColaboradorController::class, 'createAction'])->name('Job.criar_action');
-    Route::post('/dashboard/job/{id}/criar-action-etapa-2', [ColaboradorController::class, 'createActionStage2'])->name('Job.criar_action_stage_2');
-    Route::post('/dashboard/editar/{id}', [ColaboradorController::class, 'editAction'])->name('Job.editar_action');
-    Route::post('/dashboard/copiar', [ColaboradorController::class, 'copyAction'])->name('Job.copiar_action');
-    Route::post('/reaberto/{id}', [ColaboradorController::class, 'reOpenJob'])->name('reaberto');
     Route::get('/prioridade', [ColaboradorController::class, 'changeCategory'])->name('prioridade');
-    Route::post('/finalizar/demanda/{id}', [ColaboradorController::class, 'finalize'])->name('Finalizar_action');
-    Route::post('/pausar/demanda/{id}', [ColaboradorController::class, 'pause'])->name('Pausar_action');
-    Route::post('/retomar/demanda/{id}', [ColaboradorController::class, 'resume'])->name('Retomar_action');
-    Route::post('/respostas/create/{id}', [RespostasController::class, 'answerCreate'])->name('Answer.create'); 
-    Route::post('/respostas/action/{id}', [RespostasController::class, 'answerAction'])->name('Answer.action'); 
-    Route::post('/respostas/delete/{id}', [RespostasController::class, 'delete'])->name('Answer.delete');
-    Route::get('/respostas/editar/{id}', [RespostasController::class, 'getAnswer'])->name('getAnswer');
-    Route::post('/respostas/editar-form', [RespostasController::class, 'getAnswerAction'])->name('Answer.edit');
-    Route::post('/jobs/date', [ColaboradorController::class, 'getJobsByDate'])->name('Job.date');
-    Route::post('/pauta/aceitar/tempo/colaborador/{id}', [ColaboradorController::class, 'acceptTime'])->name('Pauta.Aceitar_tempo_colaborador');
-    Route::post('/receber/alteracoes/{id}', [ColaboradorController::class, 'receiveAlteration'])->name('Receber_alteracoes');
-
 });
 
 //logado
@@ -136,6 +111,35 @@ Route::middleware(['auth'])->group(function(){
     Route::post('/notificacao/action', [NotificacoesController::class, 'action'])->name('Notification.action');
     Route::post('/notificacao/{id}', [NotificacoesController::class, 'actionSingle'])->name('Notification.action.single');
     Route::post('/demanda/prazo/sugerido/{id}', [DemandasController::class, 'changeTime'])->name('Demanda.prazo.action');
+});
+
+//colaborador e admin agencia
+Route::middleware(['auth', 'colaborador_agencia'])->group(function () {
+    Route::get('/dashboard/jobs', [ColaboradorController::class, 'jobs'])->name('Jobs');
+    Route::get('/dashboard/etapas', [ColaboradorController::class, 'stages'])->name('Etapas');
+    Route::get('/dashboard/criar/etapa/1', [ColaboradorController::class, 'create'])->name('Job.criar');
+    Route::get('/dashboard/criar/job/{id}/etapa/2', [ColaboradorController::class, 'createStage2'])->name('Job.criar_etapa_2');
+    Route::get('/dashboard/deletar/job/{id}/etapa/1', [ColaboradorController::class, 'delteStage1'])->name('Job.deletar_etapa_1');
+    Route::get('/dashboard/job/editar/{id}', [ColaboradorController::class, 'edit'])->name('Job.editar');
+    Route::get('/dashboard/job/copiar/{id}', [ColaboradorController::class, 'copy'])->name('Job.copiar');
+    Route::get('/dashboard/delete/{id}', [ColaboradorController::class, 'delete'])->name('Job.delete');
+    Route::post('/dashboard/criar-action', [ColaboradorController::class, 'createAction'])->name('Job.criar_action');
+    Route::post('/dashboard/job/{id}/criar-action-etapa-2', [ColaboradorController::class, 'createActionStage2'])->name('Job.criar_action_stage_2');
+    Route::post('/dashboard/editar/{id}', [ColaboradorController::class, 'editAction'])->name('Job.editar_action');
+    Route::post('/dashboard/copiar', [ColaboradorController::class, 'copyAction'])->name('Job.copiar_action');
+    Route::post('/reaberto/{id}', [ColaboradorController::class, 'reOpenJob'])->name('reaberto');
+    Route::post('/finalizar/demanda/{id}', [ColaboradorController::class, 'finalize'])->name('Finalizar_action');
+    Route::post('/pausar/demanda/{id}', [ColaboradorController::class, 'pause'])->name('Pausar_action');
+    Route::post('/retomar/demanda/{id}', [ColaboradorController::class, 'resume'])->name('Retomar_action');
+    Route::post('/respostas/create/{id}', [RespostasController::class, 'answerCreate'])->name('Answer.create'); 
+    Route::post('/respostas/action/{id}', [RespostasController::class, 'answerAction'])->name('Answer.action'); 
+    Route::post('/respostas/delete/{id}', [RespostasController::class, 'delete'])->name('Answer.delete');
+    Route::get('/respostas/editar/{id}', [RespostasController::class, 'getAnswer'])->name('getAnswer');
+    Route::post('/respostas/editar-form', [RespostasController::class, 'getAnswerAction'])->name('Answer.edit');
+    Route::post('/jobs/date', [ColaboradorController::class, 'getJobsByDate'])->name('Job.date');
+    Route::post('/pauta/aceitar/tempo/colaborador/{id}', [ColaboradorController::class, 'acceptTime'])->name('Pauta.Aceitar_tempo_colaborador');
+    Route::post('/receber/alteracoes/{id}', [ColaboradorController::class, 'receiveAlteration'])->name('Receber_alteracoes');
+   
 });
 
 //login
