@@ -6,12 +6,13 @@
 @endsection
 
 @section('content')
+
     <section>
         <div class="main-content">
             <div class="page-content">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-xl-12">                            
+                        <div class="col-xl-12">
                             <div class="card tableHome">
                                 <div class="card-body">
                                    <div class="changeDem">
@@ -35,8 +36,8 @@
                                                         @else
                                                             <thead>
                                                                 <tr>
-                                                                    <th>Título</th>
                                                                     <th>Prioridade</th>
+                                                                    <th>Título</th>
                                                                     <th>Status</th>
                                                                     <th>Prazo inicial</th>
                                                                     <th>Prazo de entrega</th>
@@ -46,7 +47,6 @@
                                                             <tbody>
                                                                 @foreach ($demandas as $demanda )
                                                                     <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
-                                                                        <td class="title">{{ $demanda->titulo }}</td>
                                                                         <td>
                                                                             <span class="badge" style="background-color: {{ $demanda->cor }}">
                                                                                 @if($demanda->prioridade === 10)
@@ -60,6 +60,7 @@
                                                                                 @endif
                                                                             </span>
                                                                         </td>
+                                                                        <td class="title">{{ $demanda->titulo }}</td>
                                                                         <td>
                                                                             @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
                                                                                 <span class="statusBadge" style="margin: 0px; background-color: #ffc7a5" style="margin: 0px">RECEBIDO</span>

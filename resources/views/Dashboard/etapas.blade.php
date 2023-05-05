@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Etapa 2')
 
 @section('css')
@@ -113,22 +109,24 @@
                                                         @else
                                                         <thead>
                                                             <tr>
-                                                                <th>Título</th>
+                                                                <th>Ações</th>
                                                                 <th>Prioridade</th>
+                                                                <th>Título</th>
                                                                 <th>Status</th>
                                                                 <th>Prazo inicial</th>
                                                                 <th>Prazo de entrega</th>
-                                                                <th>Agência</th>
                                                                 <th>Marca</th>
-                                                                <th>Ações</th>
+                                                                <th>Agência</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($demandas as $key => $demanda )
-                                                                @if ($demanda['agencia'] || $isAdminAg > 0)
+                                                                @if ($demanda['agencia'])
                                                                 <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job.criar_etapa_2', ['id' => $demanda->id])}}">
-                                                                    <td class="title">
-                                                                        {{ $demanda->titulo }}
+                                                                    <td class="actions">
+                                                                        <a  href="{{route('Job.deletar_etapa_1', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit deleteBt btnDanger" style="background-color: #5e5e5e" title="Deletar">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </a>
                                                                     </td>
                                                                     <td>
                                                                         <span class="badge" style="background-color: {{ $demanda->cor }}">
@@ -143,20 +141,11 @@
                                                                             @endif
                                                                         </span>
                                                                     </td>
+                                                                    <td class="title">
+                                                                        {{ $demanda->titulo }}
+                                                                    </td>
                                                                     <td>
-                                                                        @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
-                                                                            <span class="statusBadge" style="margin: 0px">RECEBIDO</span>
-                                                                        @elseif($demanda->em_pauta == 1 && $demanda->pausado == 0)
-                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ff6a30">EM PAUTA</span>
-                                                                        @elseif ($demanda->em_pauta == 0 && $demanda->finalizada == 0 && $demanda->entregue == '0' && $demanda->pausado == 0)
-                                                                            <span style="background-color: #fb3232" class="statusBadge" style="margin: 0px">PENDENTE</span>
-                                                                        @elseif($demanda->entregue == 1  && $demanda->pausado == 0)
-                                                                            <span style="background-color: #44a2d2"  class="statusBadge" style="margin: 0px">ENTREGUE</span> 
-                                                                        @elseif($demanda->pausado == 1)
-                                                                            <span class="statusBadge" style="margin: 0px; background-color: #b3e5ff">PAUSADO</span> 
-                                                                        @elseif($demanda->finalizada == 1)
-                                                                            <span style="background-color: #3dbb3d" class="statusBadge" style="margin: 0px">FINALIZADO</span> 
-                                                                        @endif
+                                                                        <span style="background-color: #ffb887" class="statusBadge" style="margin: 0px">PENDENTE</span>
                                                                     </td>
                                                                     <td>
                                                                         {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $demanda->inicio)->format('d/m/Y H:i'); }}
@@ -171,17 +160,12 @@
                                                                         @endif
                                                                     </td>
                                                                     <td>  
-                                                                        {{ $demanda['agencia']->nome }}
-                                                                    </td>
-                                                                    <td>  
                                                                         @foreach ($demanda['marcas'] as $marca )
                                                                             <span>{{ $marca->nome }}</span>
                                                                         @endforeach
                                                                     </td>
-                                                                    <td class="actions">
-                                                                        <a  href="{{route('Job.deletar_etapa_1', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit deleteBt btnDanger" style="background-color: #5e5e5e" title="Deletar">
-                                                                            <i class="fas fa-trash"></i>
-                                                                        </a>
+                                                                    <td>  
+                                                                        {{ $demanda['agencia']->nome }}
                                                                     </td>
                                                                     <td>
                                                                         @if($demanda->count_questionamentos > 0 )

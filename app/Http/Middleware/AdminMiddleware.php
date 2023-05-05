@@ -21,7 +21,7 @@ class AdminMiddleware
            if (Auth::user()->tipo == 'admin'){
                 return $next($request);
             }else{
-                return redirect()->route('login')->with('error', 'Você não tem autorização para acessar essa página.');
+                return redirect()->route('login')->with('error', 'Você precisa efetuar o login para continuar.');
             }
         }
     }

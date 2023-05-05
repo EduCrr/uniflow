@@ -19,7 +19,7 @@ class ComentarioPauta extends Model
 
     protected $fillable = [
         'comentario_id',
-        'demadnapauta_id',
+        'demandapauta_id',
     ];
 
 }

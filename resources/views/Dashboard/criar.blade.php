@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Criar etapa 1')
 
 @section('css')
@@ -25,7 +21,7 @@
                                     <form id="formCreate" style="margin-top: 15px" method="POST" action="{{route('Job.criar_action')}}" enctype="multipart/form-data" class="needs-validation" novalidate>
                                         @csrf
                                         <div class="mb-3 row">
-                                            <div class="col-lg-6  mo-b-15">
+                                            <div class="col-lg-4  mo-b-15">
                                                <label for="inputT" class="form-label pt-0">Título</label>
                                                 <div class="">
                                                     <input name="titulo" value="{{ old('titulo') }}" class="form-control" type="text" required  id="inputT">
@@ -34,36 +30,32 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            @if($isAdminAg > 0)
-                                                <div class="col-lg-6">
-                                                    <label class="col-sm-2 form-label">Usuario(s)</label>
-                                                    <div class="">
-                                                        <select class="select2-multiple-users form-control my-select" name="agencia[]" multiple="multiple" required id="select2MultipleUsers">
-                                                            @foreach ($users['agenciasUsuarios'] as $userAg)
-                                                                <option  data-cor="{{ '#222' }}"  @if (!empty(old('agencia')) && in_array($marca->id, old('agencia'))) selected  @endif value="{{ $userAg->id }}">{{ $userAg->nome }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="invalid-feedback">
-                                                            Preencha o campo usuario
-                                                        </div>
+                                            <div class="col-lg-4">
+                                              <label for="agencia" class="col-sm-2 form-label">Agência</label>
+                                                <div class="">
+                                                    <select id="agencia" name="agencia" class="form-select select2" required>
+                                                        <option value="">Selecionar agência</option>
+                                                        @foreach ($userInfos['colaboradoresAgencias'] as $agencia )
+                                                            <option value="{{ $agencia->id }}" @if(old('agencia') == $agencia->id) selected @endif>{{ $agencia->nome }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Preencha o campo agência
                                                     </div>
                                                 </div>
-                                            @else
-                                                <div class="col-lg-6">
-                                                    <label for="agencia" class="col-sm-2 form-label">Agência</label>
-                                                    <div class="">
-                                                        <select id="agencia" name="agencia" class="form-select select2" required>
-                                                            @foreach ($userInfos['colaboradoresAgencias'] as $agencia )
-                                                                <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                        <div class="invalid-feedback">
-                                                            Preencha o campo agência
-                                                        </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <label id="users" class="col-sm-2 form-label">Usuário(s) responsável(is)</label>
+                                                <div class="">
+                                                    <select id="users" class="select2-multiple-user form-control my-select" name="users[]" multiple="multiple" required id="select2MultipleUser">
+                                                    </select>
+                                                    <div class="invalid-feedback">
+                                                        Preencha o campo usuários
                                                     </div>
                                                 </div>
-                                            @endif
+                                            </div>
                                         </div>
+                                       
                                         <div class="mb-3 row">
                                             <div class="col-lg-6">
                                                 <label for="inputP" class="col-sm-2 form-label">Prioridade</label>
@@ -82,7 +74,7 @@
                                             <div class="col-lg-6">
                                                 <label class="col-sm-2 form-label">Marca</label>
                                                 <div class="">
-                                                    <select class="select2-multiple form-control my-select" name="marcas[]" multiple="multiple" required id="select2Multiple">
+                                                    <select placeholder="a" class="select2-multiple form-control my-select" name="marcas[]" multiple="multiple" required id="select2Multiple">
                                                         @foreach ($userInfos['marcas'] as $marca )
                                                             <option @if (!empty(old('marcas')) && in_array($marca->id, old('marcas'))) selected  @endif value="{{ $marca->id }}" data-cor="{{ $marca->cor }}">{{ $marca->nome }}</option>
                                                         @endforeach
@@ -140,7 +132,6 @@
     <script src="{{ asset('assets/js/select2.js') }}" ></script>
 
     <script>
-        
 
         $(document).ready(function() {
 
@@ -172,6 +163,7 @@
                     form.addClass("was-validated");
                 }
             });
+          
 
             $('.select2-multiple').select2({
                 placeholder: "Selecione seu(s) setor(es)",
@@ -183,12 +175,13 @@
                 },
             });
 
-            $('.select2-multiple-users').select2({
-                placeholder: "Selecione seu(s) usuario(s)",
+            
+            $('.select2-multiple-user').select2({
+                placeholder: "Selecione seu(s) usuário(s)",
                 allowClear: true,
                 templateSelection: function (data, container) {
                     var cor = $(data.element).data('cor'); // pega a cor do data-cor
-                    $(container).css("background-color", cor); // define a cor de fundo do option
+                    $(container).css("background-color", '#222'); // define a cor de fundo do option
                     return data.text;
                 },
             });
@@ -292,6 +285,38 @@
             validarDataFinal(inputI, inputF);
  
         });
+
+        $('#agencia').on('change', function() {
+            let id = $(this).val();
+            if(id != ''){
+                carregaUsuarios($(this).val());
+            }else{
+                $('.select2-multiple-user').empty();
+            }
+        });
+
+      
+        function carregaUsuarios(id) {
+            $.ajax({
+                url: '/usuarios/busca', 
+                type: 'post',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+                },
+                data: { id: id }, 
+                success: function(data) {
+                $('.select2-multiple-user').empty();
+
+                // Limpa os options existentes
+                $('.select2-multiple-user option').not(':first-child').remove();
+                // Adiciona os novos options
+                $.each(data, function(key, usuario) {
+                    var option = new Option(usuario.nome, usuario.id, true);
+                    $('.select2-multiple-user').append(option).trigger('change');
+                });
+                }
+            });
+        }
 
         (function () {
         'use strict'

@@ -99,6 +99,11 @@ class Demanda extends Model
         return $this->belongsToMany(User::class, 'demandas_usuarios', 'demanda_id', 'usuario_id');
     }
 
+    //demandas que o admin agencia cria
+    public function demandasUsuarioAdmin(){
+        return $this->belongsToMany(User::class, 'admin_demandas_usuarios', 'demanda_id', 'usuario_id');
+    }
+
     public function marcasDemandas(){
         return $this->belongsToMany(Marca::class, 'demandas_marcas', 'demanda_id', 'marca_id');
     }

@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Minhas pautas')
 
 @section('css')
@@ -37,97 +33,110 @@
                                         <div class="col-sm-12">
                                             <div class="table-responsive" id="jobs" >
                                                 <table class="table table-hover table-centered table-nowrap mb-0">
-                                                     @if(count($demandas) === 0)
+                                                    @if(count($demandas) === 0)
                                                         <p>Nenhum job foi encontrado!</p>
                                                         @else
                                                         <thead>
                                                             <tr>
-                                                                <th>Título</th>
+                                                                <th>Ação</th>
                                                                 <th>Prioridade</th>
+                                                                <th>Título</th>
                                                                 <th>Status</th>
                                                                 <th>Prazo inicial</th>
                                                                 <th>Prazo de entrega</th>
+                                                                <th>Progresso</th>
                                                                 <th>Agencia</th>
-                                                                <th>Marca(s)</th>
-                                                                <th>Editar</th>
+                                                                <th></th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($demandas as $demanda )
                                                                 @if ($demanda['agencia'])
                                                                 <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
+                                                                    <td>
+                                                                        <a href="{{route('Job.copiar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" style="background-color: #a1a1a1" title="Copiar">
+                                                                            <i class="fas fa-copy"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                    <td>
+                                                                        <span class="badge" style="background-color: {{ $demanda->cor }}">
+                                                                            @if($demanda->prioridade === 10)
+                                                                                URGENTE 
+                                                                                @elseif($demanda->prioridade === 5)
+                                                                                MÉDIA 
+                                                                                @elseif($demanda->prioridade === 1)
+                                                                                BAIXA 
+                                                                                @elseif($demanda->prioridade === 7)
+                                                                                ALTA 
+                                                                            @endif
+                                                                        </span>
+                                                                    </td>
                                                                     <td class="title"> {{ $demanda->titulo }}</td>
-                                                                        <td>
-                                                                            <span class="badge" style="background-color: {{ $demanda->cor }}">
-                                                                                @if($demanda->prioridade === 10)
-                                                                                    URGENTE 
-                                                                                    @elseif($demanda->prioridade === 5)
-                                                                                    MÉDIA 
-                                                                                    @elseif($demanda->prioridade === 1)
-                                                                                    BAIXA 
-                                                                                    @elseif($demanda->prioridade === 7)
-                                                                                    ALTA 
-                                                                                @endif
+                                                                    <td>
+                                                                        @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffc7a5" style="margin: 0px">RECEBIDO</span>
+                                                                        @elseif($demanda->em_pauta == 1 && $demanda->pausado == 0)
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffa76d">EM PAUTA</span>
+                                                                        @elseif ($demanda->em_pauta == 0 && $demanda->finalizada == 0 && $demanda->entregue == '0' && $demanda->pausado == 0)
+                                                                            <span style="background-color: #ffb887" class="statusBadge" style="margin: 0px">PENDENTE</span>
+                                                                        @elseif($demanda->entregue == 1  && $demanda->pausado == 0)
+                                                                            <span style="background-color: #ff9652"  class="statusBadge" style="margin: 0px">ENTREGUE</span> 
+                                                                        @elseif($demanda->pausado == 1)
+                                                                            <span class="statusBadge" style="margin: 0px; background-color: #ffd5bf">CONGELADO</span> 
+                                                                        @elseif($demanda->finalizada == 1)
+                                                                            <span style="background-color: #ff8538" class="statusBadge" style="margin: 0px">FINALIZADO</span> 
+                                                                        @endif
+                                                                    </td>
+                                                                    <td>{{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $demanda->inicio)->format('d/m/Y H:i'); }}</td>
+                                                                    <td>
+                                                                        {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $demanda->final)->format('d/m/Y H:i'); }}
+                                                                        @if($demanda->finalizada == 0 && $dataAtual->greaterThan($demanda->final))
+                                                                            <span class="atrasado">ATRASADO!</span>
+                                                                        @endif
+                                                                        @if($demanda->finalizada == 1 && $demanda->atrasada == 1)
+                                                                            <span class="atrasado">ATRASADO!</span>
+                                                                        @endif
+                                                                    </td>
+                                                                    <td>
+                                                                        <div style="max-width: 130px;">
+                                                                            <small class="float-end ms-2 font-size-12 numberProgress">{{$demanda->porcentagem}}%</small>
+                                                                            <div class="progress mt-2" style="height: 5px">
+                                                                                <div
+                                                                                class="progress-bar bg-primary"
+                                                                                role="progressbar"
+                                                                                style="width: {{$demanda->porcentagem}}%"
+                                                                                aria-valuenow="{{$demanda->porcentagem}}"
+                                                                                aria-valuemin="0"
+                                                                                aria-valuemax="100"
+                                                                                >
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        {{ $demanda['agencia']->nome }}
+                                                                    </td>
+                                                                
+                                                                    <!-- <td>  
+                                                                        @foreach ($demanda['marcas'] as $marca )
+                                                                            <span>{{ $marca->nome }}</span>
+                                                                        @endforeach
+                                                                    </td> -->
+                                                                    <td>
+                                                                        @if($demanda->count_questionamentos > 0 )
+                                                                            <span>
+                                                                                <i class="fas fa-comment-dots msg"></i>
                                                                             </span>
-                                                                        </td>
-                                                                        <td>
-                                                                            @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
-                                                                                <span class="statusBadge" style="margin: 0px; background-color: #ffc7a5" style="margin: 0px">RECEBIDO</span>
-                                                                            @elseif($demanda->em_pauta == 1 && $demanda->pausado == 0)
-                                                                                <span class="statusBadge" style="margin: 0px; background-color: #ffa76d">EM PAUTA</span>
-                                                                            @elseif ($demanda->em_pauta == 0 && $demanda->finalizada == 0 && $demanda->entregue == '0' && $demanda->pausado == 0)
-                                                                                <span style="background-color: #ffb887" class="statusBadge" style="margin: 0px">PENDENTE</span>
-                                                                            @elseif($demanda->entregue == 1  && $demanda->pausado == 0)
-                                                                                <span style="background-color: #ff9652"  class="statusBadge" style="margin: 0px">ENTREGUE</span> 
-                                                                            @elseif($demanda->pausado == 1)
-                                                                                <span class="statusBadge" style="margin: 0px; background-color: #ffd5bf">CONGELADO</span> 
-                                                                            @elseif($demanda->finalizada == 1)
-                                                                                <span style="background-color: #ff8538" class="statusBadge" style="margin: 0px">FINALIZADO</span> 
-                                                                            @endif
-                                                                        </td>
-                                                                        <td>{{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $demanda->inicio)->format('d/m/Y H:i'); }}</td>
-                                                                        <td>
-                                                                            {{ Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $demanda->final)->format('d/m/Y H:i'); }}
-                                                                            @if($demanda->finalizada == 0 && $dataAtual->greaterThan($demanda->final))
-                                                                                <span class="atrasado">ATRASADO!</span>
-                                                                            @endif
-                                                                            @if($demanda->finalizada == 1 && $demanda->atrasada == 1)
-                                                                                <span class="atrasado">ATRASADO!</span>
-                                                                            @endif
-                                                                        </td>
-                                                                        <td>
-                                                                            {{ $demanda['agencia']->nome }}
-                                                                        </td>
-                                                                        <td>  
-                                                                            @foreach ($demanda['marcas'] as $marca )
-                                                                                <span>{{ $marca->nome }}</span>
-                                                                            @endforeach
-                                                                        </td>
-                                                                       
-                                                                        <td>
-                                                                            <a href="{{route('Job.copiar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" style="background-color: #a1a1a1" title="Copiar">
-                                                                                <i class="fas fa-copy"></i>
-                                                                            </a>
-                                                                            {{-- <a href="{{route('Job', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit btnJob" title="Acessar">
-                                                                                <i class="fas fa-info-circle"></i>
-                                                                            </a> --}}
-                                                                        </td>
-                                                                        <td>
-                                                                            @if($demanda->count_questionamentos > 0 )
-                                                                                <span>
-                                                                                    <i class="fas fa-comment-dots msg"></i>
-                                                                                </span>
-                                                                            @endif
-                                                                            {{-- @if($demanda->count_notificacoes > 0 )
-                                                                                <span>
-                                                                                    <i class="fas fa-bell msg"></i>
-                                                                                </span>
-                                                                            @endif --}}
-                                                                        </td>
-                                                                    </tr>
+                                                                        @endif
+                                                                        {{-- @if($demanda->count_notificacoes > 0 )
+                                                                            <span>
+                                                                                <i class="fas fa-bell msg"></i>
+                                                                            </span>
+                                                                        @endif --}}
+                                                                    </td>
+                                                                </tr>
                                                                 @endif
                                                             @endforeach
-                                                            
                                                         </tbody>
                                                     @endif
                                                 </table>

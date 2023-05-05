@@ -27,41 +27,75 @@ class HomeController extends Controller
               return redirect('/dashboard');
             }else{
                 
-                $userAg = User::where('excluido', null)->where('id', $user->id)->with(['usuariosAgencias' => function ($query) {
-                $query->where('excluido', null);
-                }])->first();
-                $idsAg = [];
                 $events = [];
                 
-                foreach($userAg['usuariosAgencias'] as $item){
-                    array_push($idsAg, $item->id);
-                }
-
-                $demandas = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->whereIn('agencia_id', $idsAg)->with(['marcas' => function ($query) {
-                $query->where('excluido', null);
-                }])->with(['agencia' => function ($query) {
-                $query->where('excluido', null);
-                }])->with(['demandasReabertas' => function ($query) {
+                $demandas = Demanda::where('excluido', null)
+                ->where('etapa_1', 1)
+                ->where('etapa_2', 1)
+                ->where(function ($query) use ($user) {
+                    $query->whereHas('demandasUsuario', function ($query) use ($user) {
+                        $query->where('usuario_id', $user->id);
+                    });
+                })
+                ->with(['marcas' => function ($query) {
+                    $query->where('excluido', null);
+                }])
+                ->with(['agencia' => function ($query) {
+                    $query->where('excluido', null);
+                }])
+                ->with(['demandasReabertas' => function ($query) {
                     $query->where('finalizado', null);
-                }])->withCount(['questionamentos as count_questionamentos' => function ($query) {
+                }])
+                ->withCount(['questionamentos as count_questionamentos' => function ($query) {
                     $query->where('visualizada_ag', 0)->where('excluido', null);
-                }])->withCount(['questionamentos as count_respostas' => function ($query) {
+                }])
+                ->withCount(['questionamentos as count_respostas' => function ($query) {
                     $query->whereHas('respostas', function ($query) {
                         $query->where('visualizada_ag', 0);
                     });
-                }])->orderBy('id', 'DESC')->paginate(15);
+                }])
+                ->orderBy('id', 'DESC')
+                ->paginate(15);
 
                 foreach($demandas as $key => $item){
+                    if ($item->finalizada == 1) {
+                        $porcentagem = 100;
+                    } else {
+                        // Obter o total de prazosDaPauta finalizados da demanda
+                        $totalFinalizados = $item->prazosDaPauta()->whereNotNull('finalizado')->count();
+                    
+                        // Obter o total de prazosDaPauta não finalizados da demanda
+                        $totalNaoFinalizados = $item->prazosDaPauta()->whereNull('finalizado')->count();
+                       
+                        // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
+                        $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
+                        if ($totalPrazos == 0) {
+                            $porcentagem = 0;
+                        } elseif ($totalFinalizados == 0) {
+                            $porcentagem = 10;
+                        } else {
+                            $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
+                        }
+                    }
+        
+                    // Adicionar a porcentagem como um atributo da demanda
+                    $item->porcentagem = $porcentagem;
+                    
                     $demandasReabertas = $item->demandasReabertas;
                     if ($demandasReabertas->count() > 0) {
                         $sugerido = $demandasReabertas->sortByDesc('id')->first()->sugerido;
                         $item->final = $sugerido;
                     }
                 }
+                
 
                 $demandasEvents = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->with(['demandasReabertas' => function ($query) {
                     $query->where('finalizado', null);
-                }])->whereIn('agencia_id', $idsAg)->where('em_pauta', '1')->where('pausado', 0)->get();
+                }])->where(function ($query) use ($user) {
+                    $query->whereHas('demandasUsuario', function ($query) use ($user) {
+                        $query->where('usuario_id', $user->id);
+                    });
+                })->where('em_pauta', '1')->where('pausado', 0)->get();
 
                 if($demandasEvents != null){
                     foreach($demandasEvents as $key => $demanda){

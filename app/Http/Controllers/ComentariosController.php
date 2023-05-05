@@ -23,37 +23,51 @@ class ComentariosController extends Controller
     public function delete($id){
         $user = Auth::User();
         $comentario = Questionamento::find($id);
-        if($comentario){
-            $comentarioPauta = ComentarioPauta::where('comentario_id', $id)->first();
-            $demandaTempo = DemandaTempo::find($comentarioPauta->demandapauta_id);
-            $demandasTemposAg = DemandaTempo::where('agencia_id', $demandaTempo->agencia_id)->where('finalizado', null)->count();
-            $demandasTemposPautaAg = DemandaTempo::where('agencia_id', $demandaTempo->agencia_id)->where('code_tempo', 'em-pauta')->count();
-           
-            if($demandasTemposAg == 1 && $demandasTemposPautaAg == 0){
-                $demanda = Demanda::select('id')->where('id', $demandaTempo->demanda_id)->first();
-                $demanda->em_alteracao = 0;
-                $demanda->save();
-            }
-            
-            $demandaTempo->delete();
-            $comentario->excluido =  date('Y-m-d H:i:s');
-            $comentario->save();
+        $demanda = Demanda::select('id', 'agencia_id')->where('id', $comentario->demanda_id)->first();
 
-            $agenciaNotificacao = new Notificacao();
-            $agenciaNotificacao->agencia_id = $demandaTempo->agencia_id;
-            $agenciaNotificacao->demanda_id = $demandaTempo->demanda_id;
-            $agenciaNotificacao->criado = date('Y-m-d H:i:s');
-            $agenciaNotificacao->visualizada = '0';
-            $agenciaNotificacao->tipo = 'criada';
-            $agenciaNotificacao->conteudo = 'Excluída '.$comentario->tipo . ' do job '. $demandaTempo->demanda_id;
-            $agenciaNotificacao->save();
+        if($comentario){
+            if (stripos($comentario->tipo, 'Questionamento') !== false || stripos($comentario->tipo, 'Observação') !== false || stripos($comentario->tipo, 'Finalizado') !== false || stripos($comentario->tipo, 'Entregue') !== false) {
+                $comentario->excluido =  date('Y-m-d H:i:s');
+                $comentario->save();
+            } else {
+                $comentarioPauta = ComentarioPauta::where('comentario_id', $comentario->id)->first();
+                $demandaTempo = DemandaTempo::find($comentarioPauta->demandapauta_id);
+                $demandasTemposAg = DemandaTempo::where('agencia_id', $demandaTempo->agencia_id)->where('finalizado', null)->count();
+                $demandasTemposPautaAg = DemandaTempo::where('agencia_id', $demandaTempo->agencia_id)->where('code_tempo', 'em-pauta')->count();
+               
+                if($demandasTemposAg == 1 && $demandasTemposPautaAg == 0){
+                    $demanda = Demanda::select('id')->where('id', $demandaTempo->demanda_id)->first();
+                    $demanda->em_alteracao = 0;
+                    $demanda->save();
+                }else if($demandasTemposAg == 0){
+                    return back()->with('Error', 'Não foi possível excluir esse comentário.' ); 
+                }
+                
+                $agenciaNotificacao = new Notificacao();
+                $agenciaNotificacao->demanda_id = $comentario->demanda_id;
+                $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                $agenciaNotificacao->visualizada = '0';
+                $agenciaNotificacao->tipo = 'criada';
+                $agenciaNotificacao->conteudo = 'Excluída '.$comentario->tipo . ' do job '. $comentario->demanda_id;
+                
+                foreach($demanda['demandasUsuario'] as $item){
+                    $agenciaNotificacao->usuario_id = $item->id;
+                    $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                    $agenciaNotificacao->save();
+                }
+              
+                $comentario->excluido =  date('Y-m-d H:i:s');
+                $comentario->save();
+                $demandaTempo->delete();
+        
+            }
 
             $newTimeLine = new LinhaTempo();
-            $newTimeLine->demanda_id = $demandaTempo->demanda_id;
+            $newTimeLine->demanda_id = $comentario->demanda_id;
             $newTimeLine->usuario_id = $user->id;
             $newTimeLine->criado = date('Y-m-d H:i:s');
             $newTimeLine->code = 'removido';
-            $newTimeLine->status =  'Excluída '.$comentario->tipo;
+            $newTimeLine->status =  'Removida '.$comentario->tipo;
             $newTimeLine->save();
 
             return back()->with('success', 'Comentário excluido com sucesso.' );  
@@ -88,9 +102,8 @@ class ComentariosController extends Controller
         $user = Auth::User();
         $conteudo = $request->input('conteudo');
         $tipo = $request->input('tipo');
-        $demanda = Demanda::where('id', $id)->where('excluido', null)->with('criador')->first();
+        $demanda = Demanda::where('id', $id)->where('excluido', null)->with('criador')->with('demandasUsuario')->first();
         $titleEmail = '';
-
         $validator = Validator::make($request->all(),[
            'conteudo' => 'required|min:3',
            'tipo' => 'required'
@@ -125,12 +138,6 @@ class ComentariosController extends Controller
                 $criadorNotificacao->demanda_id = $demanda->id;
                 $criadorNotificacao->criado = date('Y-m-d H:i:s');
                 $criadorNotificacao->visualizada = '0';
-
-                $agenciaNotificacao = new Notificacao();
-                $agenciaNotificacao->agencia_id = $demanda->agencia_id;
-                $agenciaNotificacao->demanda_id = $demanda->id;
-                $agenciaNotificacao->criado = date('Y-m-d H:i:s');
-                $agenciaNotificacao->visualizada = '0';
                 
                 if($tipo == 'questionamento'){
                     //agencia
@@ -183,7 +190,7 @@ class ComentariosController extends Controller
                     $demandaComentario->visualizada_ag = 1;
                     $demandaComentario->visualizada_col = 0;
 
-                    $criadorNotificacao->conteudo = 'Nova observação';
+                    $criadorNotificacao->conteudo = 'Novo comentário: Observação';
                     $criadorNotificacao->tipo = 'observacao';
                     $criadorNotificacao->save();
 
@@ -202,20 +209,31 @@ class ComentariosController extends Controller
                     $demandaComentario->visualizada_ag = 0;
                     $demandaComentario->visualizada_col = 1;
                     
-                    $agenciaNotificacao->conteudo = 'Nova observação';
-                    $agenciaNotificacao->tipo = 'observacao';
-                    $agenciaNotificacao->save();
+                 
+                    foreach($demanda['demandasUsuario'] as $usuario) {
+                        $agenciaNotificacao = new Notificacao();
+                        $agenciaNotificacao->demanda_id = $request->id;
+                        $agenciaNotificacao->usuario_id = $usuario->id;
+                        $agenciaNotificacao->conteudo = 'Novo comentário: Observação';
+                        $agenciaNotificacao->tipo = 'observacao';
+                        $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                        $agenciaNotificacao->visualizada = '0';
+                        $agenciaNotificacao->save();
+                        
+                    }
+                    
                     
                 }else if($tipo == 'alteracao' && $user->id === $demanda->criador_id){
+
+                    $conteudoNotificacao = '';
                     //colaborador
                     $hasalterationCount = LinhaTempo::where('demanda_id', $id)->where('code', 'alteracao')->count();
                     
-                    $agenciaNotificacao->tipo = 'criada';
 
                    //criar tempo
                     $newTimeJob = new DemandaTempo();
                     $newTimeJob->demanda_id = $request->id;
-                    $newTimeJob->agencia_id = $demanda->agencia_id;
+                    $newTimeJob->agencia_id = $demanda->agencia_id;   
                     $newTimeJob->criado = date('Y-m-d H:i:s');
                     $newTimeJob->aceitar_colaborador = 1;
                     $newTimeJob->code_tempo = 'alteracao';
@@ -248,7 +266,7 @@ class ComentariosController extends Controller
                         $titleEmail = 'Alteração '.($hasalterationCount + 1);
                         
                         $newTimeLine->status = 'Alteração '.($hasalterationCount + 1);
-                        $agenciaNotificacao->conteudo = 'Criada alteração '.($hasalterationCount + 1).'.';
+                        $conteudoNotificacao = 'Criada alteração '.($hasalterationCount + 1).'.';
 
                         $newTimeLine->code = 'alteracao';
                         $newTimeLine->save();
@@ -269,7 +287,7 @@ class ComentariosController extends Controller
                         $newTimeLine->status = 'Alteração '.($hasalterationCount + 1);
                         $newTimeLine->code = 'alteracao';
                         $newTimeLine->save();
-                        $agenciaNotificacao->conteudo = 'Criada alteração '.($hasalterationCount + 1).'.';
+                        $conteudoNotificacao = 'Criada alteração '.($hasalterationCount + 1).'.';
                         
                         $demanda->em_alteracao = 1;
                         $demanda->entregue = 0;
@@ -296,8 +314,20 @@ class ComentariosController extends Controller
                     //salvar tempo
                     $newTimeJob->save();
 
-                    //salve notificacao
-                    $agenciaNotificacao->save();
+
+                    //notificacao usuario
+
+                    foreach($demanda['demandasUsuario'] as $usuario) {
+                        $agenciaNotificacao = new Notificacao();
+                        $agenciaNotificacao->demanda_id = $demanda->id;
+                        $agenciaNotificacao->usuario_id = $usuario->id;
+                        $agenciaNotificacao->conteudo = $conteudoNotificacao;
+                        $agenciaNotificacao->tipo = 'criada';
+                        $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                        $agenciaNotificacao->visualizada = '0';
+                        $agenciaNotificacao->save();
+                        
+                    }
 
                     //salvar relacao comentario/pauta
 
@@ -315,17 +345,20 @@ class ComentariosController extends Controller
                         $query->select('email', 'nome');
                     }])->first();
 
-                    // foreach($agencies['agenciasUsuarios'] as $item){
-                    //     Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $item->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($item, $titleEmail, $id) {
-                    //         $message->from('envios@fmfm.com.br')
-                    //         ->to($item->email)
-                    //         ->bcc('agenciacriareof@gmail.com')
-                    //         ->subject('Nova alteração do job '. $id);
-                           
-                    //         // $message->from('dudu1.6@hotmail.com');
-                    //         // $message->to($item->email)->subject('O job '. $id . ' alterou o status para: ' . $titleEmail);
-                    //     });
-                    // }
+                    {
+                        //emails usuarios agencia
+                        // foreach($agencies['agenciasUsuarios'] as $item){
+                        //     Mail::send('notify-job', ['action_link' => $actionLink, 'nome' => $item->nome, 'body' => $bodyEmail, 'titulo' => $titleEmail], function($message) use ($item, $titleEmail, $id) {
+                        //         $message->from('envios@fmfm.com.br')
+                        //         ->to($item->email)
+                        //         ->bcc('agenciacriareof@gmail.com')
+                        //         ->subject('Nova alteração do job '. $id);
+                               
+                        //         // $message->from('dudu1.6@hotmail.com');
+                        //         // $message->to($item->email)->subject('O job '. $id . ' alterou o status para: ' . $titleEmail);
+                        //     });
+                        // }
+                    }
                     
                     //countAlteracao
                     $newAlteration = new Alteracao();
@@ -343,6 +376,18 @@ class ComentariosController extends Controller
 
                     $demandaComentario->visualizada_ag = 0;
                     $demandaComentario->visualizada_col = 1;
+
+                    foreach($demanda['demandasUsuario'] as $usuario) {
+                        $agenciaNotificacao = new Notificacao();
+                        $agenciaNotificacao->demanda_id = $demanda->id;
+                        $agenciaNotificacao->usuario_id = $usuario->id;
+                        $agenciaNotificacao->conteudo = 'Novo comentário: Finalizado';
+                        $agenciaNotificacao->tipo = 'finalizado';
+                        $agenciaNotificacao->criado = date('Y-m-d H:i:s');
+                        $agenciaNotificacao->visualizada = '0';
+                        $agenciaNotificacao->save();
+                    }
+
                 }
                 
                 $demandaComentario->save();

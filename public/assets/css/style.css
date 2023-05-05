@@ -1032,11 +1032,11 @@ span.msg {
     justify-content: space-between;
     margin: 1rem 22px;
 }
-.alingCheckBox{
-    display: flex;
+label{
+    width: auto !important;
 }
-.alingCheckBox span{
-    margin-right: 10px;
+.numberProgress{
+    margin-top: -6px !important;
 }
 @media only screen and (max-width: 1450px) {
 

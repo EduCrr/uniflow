@@ -39,21 +39,36 @@ class AppServiceProvider extends ServiceProvider
             $agenciaLogged = null;
             $isAdminAg = null;
             if(Auth::check()){
+                $isAdminAg = $user->adminUserAgencia()->whereNull('excluido')->count();
                 if($user->tipo === 'colaborador'){
                     $notifications = Notificacao::where('usuario_id', $user->id)->with(['demanda' => function ($query) {
                         $query->where('excluido', null);
                         $query->select('id', 'titulo');
                         }])->orderBy('id', 'DESC')->orderBy('criado', 'DESC')->limit(15)->get(); 
+                        
                         $notificationsCount = Notificacao::where('visualizada', '0')->where('usuario_id', $user->id)->count();
                        
-                    }else if($user->tipo === 'agencia'){
+                }else if($user->tipo === 'agencia'){
                     $agId = AgenciaUsuario::select('agencia_id')->where('usuario_id', $user->id)->first();
-                    $notifications = Notificacao::where('agencia_id', $agId->agencia_id)->with(['demanda' => function ($query) {
+                   
+                    $notifications = Notificacao::where(function ($query) use ($agId, $user) {
+                        $query->where('agencia_id', $agId->agencia_id)
+                            ->orWhere('usuario_id', $user->id);
+                    })
+                    ->with(['demanda' => function ($query) {
                         $query->where('excluido', null);
                         $query->select('id', 'titulo');
-                        }])->orderBy('id', 'DESC')->orderBy('criado', 'DESC')->limit(15)->get(); 
-                    $notificationsCount = Notificacao::where('visualizada', '0')->where('agencia_id', $agId->agencia_id)->count();
-                    $isAdminAg = $user->adminUserAgencia()->whereNull('excluido')->count();
+                    }])
+                    ->orderBy('id', 'DESC')
+                    ->orderBy('criado', 'DESC')->
+                    limit(15)->get();
+
+                    $notificationsCount = Notificacao::where(function ($query) use ($agId, $user) {
+                        $query->where('agencia_id', $agId->agencia_id)
+                            ->orWhere('usuario_id', $user->id);
+                    })
+                    ->where('visualizada', '0')
+                    ->count();
                     $agenciaLogged = User::select('id')->where('id', $user->id)->with('usuariosAgencias')->first();
                 }
             }

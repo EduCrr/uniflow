@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Copiar job')
 
 @section('css')
@@ -64,7 +60,21 @@
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3 row">
-                                                                <div class="col-lg-12  mo-b-15">
+                                                                <div class="col-lg-6">
+                                                                    <label for="inputS" class="col-sm-2 form-label">Usuário(s) responsável(is)</label>
+                                                                    <div class="">
+                                                                        <select class="select2-multiple-users form-control" name="users[]" multiple="multiple" required
+                                                                            id="select2MultipleUsers">
+                                                                            @foreach ($usuarios as $user )
+                                                                                <option value="{{ $user['id'] }}">{{ $user['nome'] }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        <div class="invalid-feedback">
+                                                                            Preencha o campo usuário
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6  mo-b-15">
                                                                     <label for="inputD" class="col-sm-2 form-label">Link Google Drive</label>
                                                                     <div class="">
                                                                         <input name="drive" value="{{ $demanda->drive }}" class="form-control" type="text"  id="inputD">
@@ -273,15 +283,25 @@
                 },
             });
 
-           
+            $('.select2-multiple-users').select2({
+                placeholder: "Selecione seu(s) usuário(s)",
+                allowClear: true,
+                templateSelection: function (data, container) {
+                    var cor = $(data.element).data('cor'); // pega a cor do data-cor
+                    $(container).css("background-color", '#222'); // define a cor de fundo do option
+                    return data.text;
+                },
+            });
 
             // //setores pré-selecionado
 
             let ids = @json($marcasIds);
+            let idsUsers = @json($usersIds);
             let demandaInicio = @json($demanda->inicio);
             let demandaFinal = @json($demanda->final);
 
             $('#select2Multiple').val(ids).trigger('change');
+            $('#select2MultipleUsers').val(idsUsers).trigger('change');
             
             //calendário
 
@@ -341,7 +361,7 @@
                     }
 
                     $.ajax({
-                        url: "/jobs/date",
+                        url: "/uniflow/jobs/date",
                         type: "post",
                         dataType: "json",
                         headers: {
@@ -366,7 +386,39 @@
 
             validarDataInicial(inputI, demandaInicio);
             validarDataFinal(inputI, inputF);
-           
+            
+            $('#agencia').on('change', function() {
+                let id = $(this).val();
+                if(id != ''){
+                    carregaUsuarios($(this).val());
+                }else{
+                    $('.select2-multiple-users').empty();
+                }
+            });
+
+        
+            function carregaUsuarios(id) {
+                $.ajax({
+                    url: '/usuarios/busca', 
+                    type: 'post',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
+                    },
+                    data: { id: id }, 
+                    success: function(data) {
+                    $('.select2-multiple-users').empty();
+
+                    // Limpa os options existentes
+                    $('.select2-multiple-users option').not(':first-child').remove();
+                    // Adiciona os novos options
+                    $.each(data, function(key, usuario) {
+                        var option = new Option(usuario.nome, usuario.id, true);
+                        $('.select2-multiple-users').append(option).trigger('change');
+                    });
+                    }
+                });
+            }
+
         });
     </script>
 @endsection

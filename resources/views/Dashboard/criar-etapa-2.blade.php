@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Criar etapa 2')
 
 @section('css')
@@ -31,7 +27,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <form id="formEdit" style="margin-top: 15px" method="POST" action="{{route('Job.criar_action_stage_2', ['id' => $demanda->id])}}" enctype="multipart/form-data" class="needs-validation" novalidate>
+                                            <form id="formEdut" style="margin-top: 15px" method="POST" action="{{route('Job.criar_action_stage_2', ['id' => $demanda->id])}}" enctype="multipart/form-data" class="needs-validation" novalidate>
                                                 @csrf
                                                 <div class="col-sm-12">
                                                     <div class="card">
@@ -44,44 +40,41 @@
                                                             </div>
                                                             <div class="collapse" id="collapseEtapa1">
                                                                 <div class="mb-3 row">
-                                                                    <div class="col-lg-6  mo-b-15">
+                                                                    <div class="col-lg-4  mo-b-15">
                                                                         <label for="inputT" class="form-label pt-0">Título</label>
                                                                         <div class="">
-                                                                            <input name="titulo" value="{{$demanda->titulo}}" class="form-control" type="text" required id="inputT">
+                                                                            <input name="titulo" value="{{$demanda->id}} {{$demanda->titulo}}" class="form-control" type="text" required id="inputT">
                                                                             <div class="invalid-feedback">
                                                                                 Preencha o campo título
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                    @if($isAdminAg > 0)
-                                                                        <div class="col-lg-6">
-                                                                            <label for="inputS" class="col-sm-2 form-label">Usuario(s)</label>
-                                                                            <div class="">
-                                                                                <select class="select2-multiple-user form-control" name="agencia[]" multiple="multiple" required
-                                                                                    id="select2MultipleUser">
-                                                                                    @foreach ($users['agenciasUsuarios'] as $user )
-                                                                                        <option value="{{ $user->id }}" data-cor="#222">{{ $user->nome }}</option>
-                                                                                    @endforeach
-                                                                                </select>
-                                                                                <div class="invalid-feedback">
-                                                                                    Preencha o campo marca
-                                                                                </div>
-                                                                            </div>
-                                                                            
-                                                                        </div>
-                                                                        @else
-                                                                        <div class="col-lg-6">
-                                                                            <label class="col-sm-2 form-label">Agência</label>
-                                                                            <div class="">
-                                                                                <select id="agencia" name="agencia" class="form-select select2" required>
-                                                                                <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
-                                                                                </select>
-                                                                                <div class="invalid-feedback">
-                                                                                    Preencha o campo agência
-                                                                                </div>
+                                                                    <div class="col-lg-4">
+                                                                        <label class="col-sm-2 form-label">Agência</label>
+                                                                        <div class="">
+                                                                            <select id="agencia" name="agencia" class="form-select select2" required>
+                                                                            <option value="{{ $agencia->id }}">{{ $agencia->nome }}</option>
+                                                                            </select>
+                                                                            <div class="invalid-feedback">
+                                                                                Preencha o campo agência
                                                                             </div>
                                                                         </div>
-                                                                    @endif
+                                                                    </div>
+                                                                    <div class="col-lg-4">
+                                                                        <label for="inputS" class="col-sm-2 form-label">Usuário(s) responsável(is)</label>
+                                                                        <div class="">
+                                                                            <select class="select2-multiple-users form-control" name="users[]" multiple="multiple" required
+                                                                                id="select2MultipleUsers">
+                                                                                @foreach ($usuarios as $user )
+                                                                                    <option value="{{ $user['id'] }}">{{ $user['nome'] }}</option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                            <div class="invalid-feedback">
+                                                                                Preencha o campo usuário
+                                                                            </div>
+                                                                        </div>
+                                                                        
+                                                                    </div>
                                                                 </div>
                                                                 <div class="mb-3 row">
                                                                     <div class="col-lg-6">
@@ -287,7 +280,7 @@
                 minimumResultsForSearch: Infinity
             });
 
-            const form = $("#formEdit");
+            const form = $("#formEdut");
             const submitButton = $("#submitButtonEdit");
             submitButton.click(function(event) {
                 if (form[0].checkValidity()) {
@@ -323,12 +316,12 @@
                 },
             });
 
-            $('.select2-multiple-user').select2({
-                placeholder: "Selecione seu(s) usuario(s)",
+            $('.select2-multiple-users').select2({
+                placeholder: "Selecione seu(s) usuário(s)",
                 allowClear: true,
                 templateSelection: function (data, container) {
                     var cor = $(data.element).data('cor'); // pega a cor do data-cor
-                    $(container).css("background-color", cor); // define a cor de fundo do option
+                    $(container).css("background-color", '#222'); // define a cor de fundo do option
                     return data.text;
                 },
             });
@@ -336,13 +329,12 @@
             // //setores pré-selecionado
 
             let ids = @json($marcasIds);
-            let idsUser = @json($usersIds);
-
+            let idsUsers = @json($usersIds);
             let demandaInicio = @json($demanda->inicio);
             let demandaFinal = @json($demanda->final);
 
             $('#select2Multiple').val(ids).trigger('change');
-            $('#select2MultipleUser').val(idsUser).trigger('change');
+            $('#select2MultipleUsers').val(idsUsers).trigger('change');
             
             //calendário
 
@@ -402,7 +394,7 @@
                     }
 
                     $.ajax({
-                        url: "/jobs/date",
+                        url: "/uniflow/jobs/date",
                         type: "post",
                         dataType: "json",
                         headers: {

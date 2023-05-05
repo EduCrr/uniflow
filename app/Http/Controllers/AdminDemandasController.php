@@ -41,9 +41,32 @@ class AdminDemandasController extends Controller
         }])->with(['demandasReabertas' => function ($query) {
             $query->where('finalizado', null);
             $query->where('excluido', null);
-        }])->orderBy('id', 'DESC')->paginate(15);
+        }])->with('demandasUsuario')->orderBy('id', 'DESC')->paginate(15);
 
         foreach($demandas as $key => $item){
+            if ($item->finalizada == 1) {
+                $porcentagem = 100;
+            } else {
+                // Obter o total de prazosDaPauta finalizados da demanda
+                $totalFinalizados = $item->prazosDaPauta()->whereNotNull('finalizado')->count();
+            
+                // Obter o total de prazosDaPauta não finalizados da demanda
+                $totalNaoFinalizados = $item->prazosDaPauta()->whereNull('finalizado')->count();
+               
+                // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
+                $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
+                if ($totalPrazos == 0) {
+                    $porcentagem = 0;
+                } elseif ($totalFinalizados == 0) {
+                    $porcentagem = 10;
+                } else {
+                    $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
+                }
+            }
+
+            // Adicionar a porcentagem como um atributo da demanda
+            $item->porcentagem = $porcentagem;
+
             $demandasReabertas = $item->demandasReabertas;
             if ($demandasReabertas->count() > 0) {
                 $sugerido = $demandasReabertas->sortByDesc('id')->first()->sugerido;
@@ -256,6 +279,29 @@ class AdminDemandasController extends Controller
         $demandas = $demandas->paginate(15)->withQueryString();
 
         foreach($demandas as $key => $demanda){
+            if ($demanda->finalizada == 1) {
+                $porcentagem = 100;
+            } else {
+                // Obter o total de prazosDaPauta finalizados da demanda
+                $totalFinalizados = $demanda->prazosDaPauta()->whereNotNull('finalizado')->count();
+            
+                // Obter o total de prazosDaPauta não finalizados da demanda
+                $totalNaoFinalizados = $demanda->prazosDaPauta()->whereNull('finalizado')->count();
+               
+                // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
+                $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
+                if ($totalPrazos == 0) {
+                    $porcentagem = 0;
+                } elseif ($totalFinalizados == 0) {
+                    $porcentagem = 10;
+                } else {
+                    $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
+                }
+            }
+
+            // Adicionar a porcentagem como um atributo da demanda
+            $demanda->porcentagem = $porcentagem;
+
             $demandasReabertas = $demanda->demandasReabertas;
             if ($demandasReabertas->count() > 0) {
                 $sugerido = $demandasReabertas->sortByDesc('id')->first()->sugerido;
@@ -580,7 +626,7 @@ class AdminDemandasController extends Controller
         }])->first();
         $idsBrands = [];
         $idsAgencys  = [];
-
+        
         foreach($usuario['marcas'] as $marca){
             array_push($idsBrands, $marca->id);
         }
@@ -1113,6 +1159,29 @@ class AdminDemandasController extends Controller
         }])->orderBy('id', 'DESC')->paginate(25);
         //s
         foreach($demandas as $key => $item){
+            if ($item->finalizada == 1) {
+                $porcentagem = 100;
+            } else {
+                // Obter o total de prazosDaPauta finalizados da demanda
+                $totalFinalizados = $item->prazosDaPauta()->whereNotNull('finalizado')->count();
+            
+                // Obter o total de prazosDaPauta não finalizados da demanda
+                $totalNaoFinalizados = $item->prazosDaPauta()->whereNull('finalizado')->count();
+               
+                // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
+                $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
+                if ($totalPrazos == 0) {
+                    $porcentagem = 0;
+                } elseif ($totalFinalizados == 0) {
+                    $porcentagem = 10;
+                } else {
+                    $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
+                }
+            }
+
+            // Adicionar a porcentagem como um atributo da demanda
+            $item->porcentagem = $porcentagem;
+            
             $demandasReabertas = $item->demandasReabertas;
             if ($demandasReabertas->count() > 0) {
                 $sugerido = $demandasReabertas->sortByDesc('id')->first()->sugerido;

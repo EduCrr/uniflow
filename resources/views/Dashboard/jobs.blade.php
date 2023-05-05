@@ -1,9 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
-
+@extends('layouts.colaborador')
 @section('title', 'Meus jobs')
 
 @section('css')
@@ -65,16 +60,16 @@
                                                 </select>
                                             </div>
                                         
-                                            @if($isAdminAg == 0)
-                                                <div class="mb-0 adjustSelects" >
-                                                    <select class="form-select select2" name="agencia_id">
-                                                        <option selected="true" value="0">Agência</option>
-                                                        @foreach ($agencies as $agencie )
-                                                                <option @if($agencia == $agencie->id) selected @endif value="{{ $agencie->id }}">{{ $agencie->nome }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            @endif
+                                        
+                                            <div class="mb-0 adjustSelects" >
+                                                <select class="form-select select2" name="agencia_id">
+                                                    <option selected="true" value="0">Agência</option>
+                                                    @foreach ($agencies as $agencie )
+                                                            <option @if($agencia == $agencie->id) selected @endif value="{{ $agencie->id }}">{{ $agencie->nome }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        
                                         
                                             <div class="mb-0 adjustSelects" >
                                                 <select class="form-select select2" name="in_tyme">
@@ -115,26 +110,25 @@
                                                         @else
                                                         <thead>
                                                             <tr>
-                                                                <th>Título</th>
+                                                                <th>Ações</th>
                                                                 <th>Prioridade</th>
+                                                                <th>Título</th>
                                                                 <th>Status</th>
                                                                 <th>Prazo inicial</th>
                                                                 <th>Prazo de entrega</th>
-                                                                @if($isAdminAg == 0)
-                                                                    <th>Agência</th>
-                                                                    @else
-                                                                    <th>Usuario(s)</th>
-                                                                @endif
-                                                                <th>Marca(s)</th>
-                                                                <th>Ações</th>
+                                                                <th>Progresso</th>
+                                                                <th>Agência</th>
+                                                                <!-- <th>Marca(s)</th> -->
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($demandas as $key => $demanda )
-                                                                @if ($demanda['agencia'] || $isAdminAg > 0)
+                                                                @if ($demanda['agencia'])
                                                                 <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
-                                                                    <td class="title">
-                                                                        {{ $demanda->titulo }}
+                                                                    <td class="actions">
+                                                                        <a href="{{route('Job.copiar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" style="background-color: #a1a1a1" title="Copiar">
+                                                                            <i class="fas fa-copy"></i>
+                                                                        </a>
                                                                     </td>
                                                                     <td>
                                                                         <span class="badge" style="background-color: {{ $demanda->cor }}">
@@ -148,6 +142,9 @@
                                                                                 ALTA 
                                                                             @endif
                                                                         </span>
+                                                                    </td>
+                                                                    <td class="title">
+                                                                        {{ $demanda->titulo }}
                                                                     </td>
                                                                     <td>
                                                                         @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
@@ -176,27 +173,30 @@
                                                                             <span class="atrasado">ATRASADO!</span>
                                                                         @endif
                                                                     </td>
-                                                                    @if($isAdminAg == 0)
-                                                                        <td>  
-                                                                            {{ $demanda['agencia']->nome }}
-                                                                        </td>
-                                                                        @else
-                                                                        <td>  
-                                                                            @foreach ($demanda['demandasUsuario'] as $marca )
-                                                                                <span>{{ $marca->nome }}</span>
-                                                                            @endforeach
-                                                                        </td>
-                                                                    @endif
+                                                                    <td>
+                                                                        <div style="max-width: 130px;">
+                                                                            <small class="float-end ms-2 font-size-12 numberProgress">{{$demanda->porcentagem}}%</small>
+                                                                            <div class="progress mt-2" style="height: 5px">
+                                                                                <div
+                                                                                class="progress-bar bg-primary"
+                                                                                role="progressbar"
+                                                                                style="width: {{$demanda->porcentagem}}%"
+                                                                                aria-valuenow="{{$demanda->porcentagem}}"
+                                                                                aria-valuemin="0"
+                                                                                aria-valuemax="100"
+                                                                                >
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </td>
                                                                     <td>  
+                                                                        {{ $demanda['agencia']->nome }}
+                                                                    </td>
+                                                                    <!-- <td>  
                                                                         @foreach ($demanda['marcas'] as $marca )
                                                                             <span>{{ $marca->nome }}</span>
                                                                         @endforeach
-                                                                    </td>
-                                                                    <td class="actions">
-                                                                        <a href="{{route('Job.copiar', ['id' => $demanda->id])}}" class="btn btn-outline-secondary btn-sm edit" style="background-color: #a1a1a1" title="Copiar">
-                                                                            <i class="fas fa-copy"></i>
-                                                                        </a>
-                                                                    </td>
+                                                                    </td> -->
                                                                     <td>
                                                                         @if($demanda->count_questionamentos > 0 )
                                                                         <span>

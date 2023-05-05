@@ -172,7 +172,7 @@
                                                     </span>
                                                 </div>
                                                 <div class="flex-1">
-                                                    <h6 class="mb-1 font-size-15">Job: {{$item->demanda->titulo}}</h6>
+                                                    <h6 class="mb-1 font-size-15">@if ($item->demanda->demanda_ag === 1) AG @endif Job: {{$item->demanda->titulo}}</h6>
                                                     <div class="text-muted">
                                                         <p class="mb-1 font-size-12">{{ $item->conteudo }}</p>
                                                     </div>

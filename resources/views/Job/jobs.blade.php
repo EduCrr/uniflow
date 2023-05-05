@@ -96,33 +96,34 @@
                                                         @else
                                                         <thead>
                                                             <tr>
-                                                                <th>Título</th>
                                                                 <th>Prioridade</th>
+                                                                <th>Título</th>
                                                                 <th>Status</th>
                                                                 <th>Prazo inicial</th>
                                                                 <th>Prazo de entrega</th>
                                                                 <th>Criador</th>
+                                                                <th>Progresso</th>
                                                                 <th>Marca</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                        @foreach ($demandas as $demanda )
-                                                            <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
+                                                            @foreach ($demandas as $demanda )
+                                                                <tr class="trLink" style="cursor: pointer;" data-href="{{route('Job', ['id' => $demanda->id])}}">
+                                                                <td>
+                                                                    <span class="badge" style="background-color: {{ $demanda->cor }}">
+                                                                        @if($demanda->prioridade === 10)
+                                                                            URGENTE 
+                                                                            @elseif($demanda->prioridade === 5)
+                                                                            MÉDIA 
+                                                                            @elseif($demanda->prioridade === 1)
+                                                                            BAIXA 
+                                                                            @elseif($demanda->prioridade === 7)
+                                                                            ALTA 
+                                                                        @endif
+                                                                    </span>
+                                                                </td>
                                                                 <td class="title">{{ $demanda->titulo }}</td>
-                                                                    <td>
-                                                                        <span class="badge" style="background-color: {{ $demanda->cor }}">
-                                                                            @if($demanda->prioridade === 10)
-                                                                                URGENTE 
-                                                                                @elseif($demanda->prioridade === 5)
-                                                                                MÉDIA 
-                                                                                @elseif($demanda->prioridade === 1)
-                                                                                BAIXA 
-                                                                                @elseif($demanda->prioridade === 7)
-                                                                                ALTA 
-                                                                            @endif
-                                                                        </span>
-                                                                   
-                                                                    </td>
+                                                                    
                                                                     <td>
                                                                         @if($demanda->em_pauta == 0 && $demanda->recebido == 1 && $demanda->finalizada == 0 && $demanda->entregue_recebido == 0 && $demanda->entregue == 0 && $demanda->em_alteracao == 0 && $demanda->pausado == 0)
                                                                             <span class="statusBadge" style="margin: 0px; background-color: #ffc7a5" style="margin: 0px">RECEBIDO</span>
@@ -151,6 +152,22 @@
                                                                     <td>
                                                                         <img alt="" class="avatar-xs rounded-circle me-2" src="{{url('/assets/images/users')}}/{{$demanda->criador->avatar }}">
                                                                         {{ $demanda->criador->nome }}
+                                                                    </td>
+                                                                    <td>
+                                                                        <div style="max-width: 130px;">
+                                                                            <small class="float-end ms-2 font-size-12 numberProgress">{{$demanda->porcentagem}}%</small>
+                                                                            <div class="progress mt-2" style="height: 5px">
+                                                                                <div
+                                                                                class="progress-bar bg-primary"
+                                                                                role="progressbar"
+                                                                                style="width: {{$demanda->porcentagem}}%"
+                                                                                aria-valuenow="{{$demanda->porcentagem}}"
+                                                                                aria-valuemin="0"
+                                                                                aria-valuemax="100"
+                                                                                >
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
                                                                     </td>
                                                                     <td>
                                                                         @foreach ($demanda['marcas'] as $marca )

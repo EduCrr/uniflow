@@ -72,6 +72,11 @@ class User extends Authenticatable
     public function usuarioDemandas(){
         return $this->belongsToMany(Demanda::class, 'demandas_usuarios', 'usuario_id', 'demanda_id');
     }
+    
+    //demandas que o admin agencia cria
+    public function agenciaUsuarioDemandas(){
+        return $this->belongsToMany(Demanda::class, 'admin_demandas_usuarios', 'usuario_id', 'demanda_id');
+    }
 
     public function marcas(){
         return $this->belongsToMany(Marca::class, 'marcas_usuarios', 'usuario_id', 'marca_id',);
@@ -108,4 +113,6 @@ class User extends Authenticatable
     public function adminUserAgencia(){
         return $this->hasMany(AdminAgencia::class, 'usuario_id');
     }
+
+   
 }

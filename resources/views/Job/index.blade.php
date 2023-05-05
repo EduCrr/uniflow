@@ -123,7 +123,7 @@
                                                                 @endif
 
                                                                 @if($demanda->em_pauta == '1' && $demanda->pausado == '0')
-                                                                    <div class="showStatus" style="background-color: #ffa76d">
+                                                                    <div class="showStatus" style="background-color: #ff6a30">
                                                                         <p>STATUS: EM PAUTA</p>
                                                                     </div>
                                                                 @endif
@@ -389,27 +389,17 @@
                                                                     <h6>Criado por</h6>
                                                                     <p>{{ $demanda['criador']->nome }}</p>
                                                                 </div>
-                                                                @if($demanda->agencia != null)
-                                                                    <div class="contentJobSingle">
-                                                                        <h6>Agência</h6>
-                                                                        <p>{{ $demanda['agencia']->nome }}</p>
-                                                                    </div>
-                                                                @endif
+                                                                <div class="contentJobSingle">
+                                                                    <h6>Agência</h6>
+                                                                    <p>{{ $demanda['agencia']->nome }}</p>
+                                                                </div>
                                                                 <div class="contentJobSingle">
                                                                     <h6>Agência usuário(s)</h6>
-                                                                    @if($demanda->agencia)
-                                                                        <div class="showUsers">
-                                                                            @foreach ($demanda->agencia['agenciasUsuarios'] as $usuario )
-                                                                                <span style="background-color: #222">  {{ $usuario->nome }} </span>
-                                                                            @endforeach
-                                                                        </div>
-                                                                        @else
-                                                                        <div class="showUsers">
-                                                                            @foreach ($demanda['demandasUsuario'] as $usuario )
-                                                                                <span style="background-color: #222">  {{ $usuario->nome }} </span>
-                                                                            @endforeach
-                                                                        </div>
-                                                                    @endif
+                                                                    <div class="showUsers">
+                                                                        @foreach ($demanda['demandasUsuario'] as $usuario )
+                                                                            <span style="background-color: #222">  {{ $usuario->nome }} </span>
+                                                                        @endforeach
+                                                                    </div>
                                                                 </div>
                                                                 @if($demanda->drive)
                                                                 <div class="contentJobSingle">
@@ -904,7 +894,7 @@
                                                                                                 </form>
                                                                                             @endif
                                                                                         @endif
-                                                                                        @if(!$showAg)
+                                                                                        @if($loggedUser->id === $demanda->criador_id)
                                                                                             @if($item->aceitar_colaborador == 0 )
                                                                                                 <form method="POST" action="{{route('Pauta.Aceitar_tempo_colaborador', ['id' => $item->id])}}">
                                                                                                     @csrf

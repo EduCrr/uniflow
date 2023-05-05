@@ -64,7 +64,7 @@
                         class="btn header-item noti-icon waves-effect"
                         data-bs-target="#search-wrap"
                     >
-                        <i class="mdi mdi-home me-2 font-size-16"></i> <a class="{{ Request::is('minhas-pautas') ? 'btnActive' : 'btnNotActive'  }}" href="{{route('Pautas')}}">Jobs</a>
+                    <i class="mdi mdi-book me-2 font-size-16"></i>  <a class="{{ Request::is('minhas-pautas') ? 'btnActive' : 'btnNotActive'  }}" href="{{route('Pautas')}}">Jobs</a>
                     </button>
                 </div>
                 @if($isAdminAg > 0)
@@ -77,9 +77,9 @@
                                 <i class="mdi mdi-chevron-down d-none d-xl-inline-block"></i>
                             </button>
                             <div class="dropdown-menu">
-                                <a href="{{route('Job.criar')}}" class="dropdown-item">Criar novo job </a>
-                                <a href="{{route('Jobs')}}" class="dropdown-item">Filtrar jobs </a>
-                                <a href="{{route('Etapas')}}" class="dropdown-item">Etapa 2 </a>
+                                <a href="{{route('Agencia.criar')}}" class="dropdown-item">Criar novo job </a>
+                                <a href="{{route('Agencia.Jobs')}}" class="dropdown-item">Filtrar jobs </a>
+                                <a href="{{route('Agencia.Etapas')}}" class="dropdown-item">Etapa 2 </a>
                             </div>
                         </div>
                     </div>
@@ -257,13 +257,13 @@
                     @if($isAdminAg > 0)
                         <li>
                             <a href="javascript: void(0);" class="has-arrow waves-effect">
-                                <i class="mdi mdi-book me-2 font-size-16"></i>
+                                <i class="mdi mdi-book-edit me-2 font-size-16"></i>
                                 <span>Criar job</span>
                             </a>
                             <ul class="sub-menu" aria-expanded="false">
-                                <li><a href="{{route('Job.criar')}}" class="dropdown-item">Criar novo job </a></li>
-                                <li> <a href="{{route('Jobs')}}" class="dropdown-item">Filtrar jobs </a></li>
-                                <li> <a href="{{route('Etapas')}}" class="dropdown-item">Etapa 2 </a></li>
+                                <li><a href="{{route('Agencia.criar')}}" class="dropdown-item">Criar novo job </a></li>
+                                <li> <a href="{{route('Agencia.Jobs')}}" class="dropdown-item">Filtrar jobs </a></li>
+                                <li> <a href="{{route('Agencia.Etapas')}}" class="dropdown-item">Etapa 2 </a></li>
                             </ul>
                         </li>
                     @endif
@@ -283,7 +283,7 @@
         @yield('content')
     </main>
     @if($isAdminAg > 0)
-        <a href="{{ route('Job.criar')}}" class="floatingBtn">
+        <a href="{{ route('Agencia.criar')}}" class="floatingBtn">
             <i class="mdi mdi-plus-box-multiple"></i>
         </a>
     @endif

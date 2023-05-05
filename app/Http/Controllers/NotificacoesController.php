@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Notificacao;
 use App\Models\AgenciaUsuario;
 Use Alert;
+use App\Models\Demanda;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,10 +29,17 @@ class NotificacoesController extends Controller
             }])->orderBy('id', 'DESC')->orderBy('criado', 'DESC')->paginate(25);        
         }else if($user->tipo === 'agencia'){
             $agId = AgenciaUsuario::select('agencia_id')->where('usuario_id', $user->id)->first();
-            $notifications = Notificacao::where('agencia_id', $agId->agencia_id)->with(['demanda' => function ($query) {
-            $query->where('excluido', null);
-            $query->select('id', 'titulo');
-            }])->orderBy('criado', 'DESC')->paginate(25);
+            $notifications = Notificacao::where(function ($query) use ($agId, $user) {
+                $query->where('agencia_id', $agId->agencia_id)
+                    ->orWhere('usuario_id', $user->id);
+            })
+            ->with(['demanda' => function ($query) {
+                $query->where('excluido', null);
+                $query->select('id', 'titulo');
+            }])
+            ->orderBy('id', 'DESC')
+            ->orderBy('criado', 'DESC')->
+            paginate(25);
         }
 
         return view('notificacao', [
@@ -66,8 +74,9 @@ class NotificacoesController extends Controller
             $visualizada->visualizada = '1';
             $visualizada->clicado = date('Y-m-d H:i:s');
             $visualizada->save();
-           
+
             return redirect()->route('Job', ['id' => $demandaId]);
+            
         }else{
             return back()->with('error', 'Nenhuma notificação foi encontrada.' );  
         }

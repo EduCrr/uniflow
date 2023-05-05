@@ -24,24 +24,18 @@ class DemandasController extends Controller
     //findOne job
     public function index(Request $request, $id){
     
-        $demanda = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->where('id', $id)->with('imagens')->with('criador')->with('demandasReabertas')->with(['prazosDaPauta.agencia', 'prazosDaPauta.comentarios'])->with(['marcas' => function ($query) {
+        $demanda = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->where('id', $id)->with('imagens')->with('criador')->with('demandasUsuario')->with('demandasReabertas')->with(['prazosDaPauta.agencia', 'prazosDaPauta.comentarios'])->with(['marcas' => function ($query) {
         $query->where('excluido', null);
         }])->first();
-        
+
         $user = Auth::User();
-        $isAdminAg = $user->adminUserAgencia()->whereNull('excluido')->count();
+
         if($demanda){
-            $demanda['agencia'] = $demanda->agencia()->with(['agenciasUsuarios' => function ($query) {
-            $query->where('excluido', null);
-            }])->first();
-            
+            $demanda['agencia'] = $demanda->agencia()->first();
             $demanda['questionamentos'] = $demanda->questionamentos()->where('excluido', null)->with(['usuario' => function ($query) {
             $query->where('excluido', null);
             }])->with('respostas.usuario')->get();
-            
-            if($user->tipo === 'agencia'){
-                $demanda['demandasUsuario'] = $demanda->demandasUsuario()->where('excluido', null)->get();
-            }
+
 
             foreach($demanda['prazosDaPauta'] as $key => $item) {
                 if($item->finalizado !== null) {
@@ -74,17 +68,10 @@ class DemandasController extends Controller
 
             $idsAgUser = [];
             $showAg = false;
-
-            if($demanda['agencia']){
-                foreach($demanda['agencia']['agenciasUsuarios'] as $item){
-                    array_push($idsAgUser, $item->id);
-                }
-            }else{
-                foreach($demanda['demandasUsuario'] as $item){
-                    array_push($idsAgUser, $item->id);
-                }
-            }
             
+            foreach($demanda['demandasUsuario'] as $item){
+                array_push($idsAgUser, $item->id);
+            }
             
             $isSend = LinhaTempo::where('demanda_id', $id)->where('status', 'Entregue')->count();
 
@@ -110,6 +97,9 @@ class DemandasController extends Controller
                 $showAg = false;
             }
 
+           
+
+            //porcentagem
             if ($demanda->finalizada == 1) {
                 $porcentagem = 100;
             } else {
@@ -132,14 +122,20 @@ class DemandasController extends Controller
             // Adicionar a porcentagem como um atributo da demanda
             $demanda->porcentagem = $porcentagem;
             $lineTime = LinhaTempo::where('demanda_id', $id)->with('usuario')->get();
-            return view('Job/index', [
-                'demanda' => $demanda,
-                'user' => $user,
-                'showAg' => $showAg,
-                'isSend' => $isSend,
-                'lineTime' => $lineTime,
-                'entregue' => $entregue,
-            ]);
+
+            if($showAg || $user->id === $demanda->criador_id){
+                return view('Job/index', [
+                    'demanda' => $demanda,
+                    'user' => $user,
+                    'showAg' => $showAg,
+                    'isSend' => $isSend,
+                    'lineTime' => $lineTime,
+                    'entregue' => $entregue,
+                ]);     
+            }else{
+                return redirect('/')->with('warning', 'Esse job não está disponível.' );
+            }
+           
 
         }else{
             return redirect('/login')->with('warning', 'Esse job não está disponível.' );
@@ -210,16 +206,11 @@ class DemandasController extends Controller
 
         $user = Auth::User();
     
-        $userAg =  User::where('id', $user->id)->where('excluido', null)->with(['usuariosAgencias' => function ($query) {
-        $query->where('excluido', null);
-        }])->first();
-        $idsAg = [];
-
-        foreach($userAg['usuariosAgencias'] as $item){
-            array_push($idsAg, $item->id);
-        }
-
-        $demandas = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->whereIn('agencia_id', $idsAg)->with(['marcas' => function ($query) {
+        $demandas = Demanda::where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->where(function ($query) use ($user) {
+        $query->whereHas('demandasUsuario', function ($query) use ($user) {
+            $query->where('usuario_id', $user->id);
+        });
+        })->with(['marcas' => function ($query) {
         $query->where('excluido', null);
         }])->with(['agencia' => function ($query) {
         $query->where('excluido', null);
@@ -271,11 +262,11 @@ class DemandasController extends Controller
             $date = Carbon::createFromFormat('d/m/Y', $date)->format('Y-m-d');
             $endDate = Carbon::createFromFormat('d/m/Y', $endDate)->format('Y-m-d');
             $demandas->where(function($query) use ($date, $endDate) {
-                $query->whereDate('inicio', '>=', $date)
-                      ->whereDate('inicio', '<=', $endDate)
-                      ->orWhereDate('final', '>=', $date)
-                      ->whereDate('final', '<=', $endDate);
-              });
+            $query->whereDate('inicio', '>=', $date)
+                ->whereDate('inicio', '<=', $endDate)
+                ->orWhereDate('final', '>=', $date)
+                ->whereDate('final', '<=', $endDate);
+            });
         }
 
         if($priority){
@@ -292,28 +283,28 @@ class DemandasController extends Controller
         $demandas = $demandas->paginate(15)->withQueryString();
 
         foreach ($demandas as $demanda) {
-            // if ($demanda->finalizada == 1) {
-            //     $porcentagem = 100;
-            // } else {
-            //     // Obter o total de prazosDaPauta finalizados da demanda
-            //     $totalFinalizados = $demanda->prazosDaPauta()->whereNotNull('finalizado')->count();
+            if ($demanda->finalizada == 1) {
+                $porcentagem = 100;
+            } else {
+                // Obter o total de prazosDaPauta finalizados da demanda
+                $totalFinalizados = $demanda->prazosDaPauta()->whereNotNull('finalizado')->count();
             
-            //     // Obter o total de prazosDaPauta não finalizados da demanda
-            //     $totalNaoFinalizados = $demanda->prazosDaPauta()->whereNull('finalizado')->count();
+                // Obter o total de prazosDaPauta não finalizados da demanda
+                $totalNaoFinalizados = $demanda->prazosDaPauta()->whereNull('finalizado')->count();
                
-            //     // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
-            //     $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
-            //     if ($totalPrazos == 0) {
-            //         $porcentagem = 0;
-            //     } elseif ($totalFinalizados == 0) {
-            //         $porcentagem = 10;
-            //     } else {
-            //         $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
-            //     }
-            // }
-            // // Adicionar a porcentagem como um atributo da demanda
-            // $demanda->porcentagem = $porcentagem;
-
+                // Calcular a porcentagem com base nos prazosDaPauta finalizados e não finalizados da demanda
+                $totalPrazos = $totalFinalizados + $totalNaoFinalizados;
+                if ($totalPrazos == 0) {
+                    $porcentagem = 0;
+                } elseif ($totalFinalizados == 0) {
+                    $porcentagem = 10;
+                } else {
+                    $porcentagem = round(($totalFinalizados / $totalPrazos) * 95);
+                }
+            }
+            // Adicionar a porcentagem como um atributo da demanda
+            $demanda->porcentagem = $porcentagem;
+            
             //ajustar final quando estiver reaberta
 
             $demandasReabertas = $demanda->demandasReabertas;
@@ -410,8 +401,6 @@ class DemandasController extends Controller
     public function changeStatusPauta(Request $request, $id){
         $user = Auth::User();
         $demanda = Demanda::where('id', $request->id)->where('excluido', null)->where('etapa_1', 1)->where('etapa_2', 1)->with('criador')->first();
-
-       
         // $validator = Validator::make($request->all(),[
         //    'finalizado' => 'required',
           
@@ -434,10 +423,12 @@ class DemandasController extends Controller
             $newTimeLineStart->demanda_id = $request->id;
             $newTimeLineStart->usuario_id = $user->id;
             $newTimeLineStart->criado = date('Y-m-d H:i:s');
-
+            
             $newTimeJob = new DemandaTempo();
             $newTimeJob->demanda_id = $request->id;
             $newTimeJob->agencia_id = $demanda->agencia_id;
+            
+
             $newTimeJob->criado = date('Y-m-d H:i:s');
             $newTimeJob->sugerido = $request->sugeridoAg;
             $newTimeJob->aceitar_agencia = 1;
@@ -554,6 +545,8 @@ class DemandasController extends Controller
 
         if(!$validator->fails()){
             $demandaPrazo = DemandaTempo::where('id', $id)->with('demanda:id,criador_id,agencia_id', 'demanda.agencia')->first();
+            $demanda = Demanda::select('id')->where('id', $demandaPrazo->demanda_id)->with('demandasUsuario')->first();
+
             $notificacao = new Notificacao();
             $notificacao->demanda_id = $demandaPrazo->demanda_id;
             $notificacao->criado = date('Y-m-d H:i:s');
@@ -574,7 +567,7 @@ class DemandasController extends Controller
             if($user->id == $userDemanda){
                 $demandaPrazo->aceitar_colaborador = 1;
                 $demandaPrazo->aceitar_agencia = 0;
-                $notificacao->agencia_id = $demandaPrazo->agencia_id;
+               
                 if($demandaPrazo->code_tempo === 'em-pauta'){
                     $notificacao->conteudo = $user->nome . ' definiu uma nova data para a '. strtolower($demandaPrazo->status).'.';
 
@@ -587,11 +580,16 @@ class DemandasController extends Controller
                 if (strtotime($request->sugerido) > strtotime($demanda->final)) {
                     // $request->sugeridoComment é maior que $demanda->final
                     $demanda->final = $request->sugerido;
+                }
 
-                } 
+               
+                foreach($demanda['demandasUsuario'] as $item){
+                    $notificacao->usuario_id = $item->id;
+                    $notificacao->criado = date('Y-m-d H:i:s');
+                    $notificacao->save();
+                }
 
                 $demanda->save();
-                    
 
             }else if($user->id != $userDemanda){
                 //criador notificacao
@@ -599,10 +597,12 @@ class DemandasController extends Controller
                 $demandaPrazo->aceitar_agencia = 1;
                 $notificacao->usuario_id = $userDemanda;
                 if($demandaPrazo->code_tempo === 'em-pauta'){
-                    $notificacao->conteudo = $demandaPrazo->demanda->agencia->nome . ' definiu uma nova data para a '. strtolower($demandaPrazo->status).'.';
+                     $notificacao->conteudo = $user->nome . ' definiu uma nova data para a '. strtolower($demandaPrazo->status).'.';
                 }else if($demandaPrazo->code_tempo === 'alteracao'){
-                    $notificacao->conteudo = $demandaPrazo->demanda->agencia->nome . ' definiu uma nova data para a alteração '. $lastNumber.'.';
+                    $notificacao->conteudo = $user->nome . ' definiu uma nova data para a alteração '. $lastNumber.'.';
                 }
+
+                $notificacao->save();
 
             }
             
@@ -622,9 +622,7 @@ class DemandasController extends Controller
             }
             $newComment->cor = '#f9bc0b';
             $newComment->save();
-            $notificacao->save();
-           
-
+            
             return back()->with('success', 'Pauta alterada com sucesso.' ); 
         }
 
@@ -675,7 +673,7 @@ class DemandasController extends Controller
             $titleEmail = 'Entregue a '. strtolower($demandaPrazo->status);
             $newTimeLine->code = 'entregue';
             $newTimeLine->save();
-            $criadorNotificacao->conteudo = 'Agência ' . $demandaPrazo->agencia->nome . ' entregou a '. strtolower($demandaPrazo->status).'.';
+            $criadorNotificacao->conteudo = $user->nome . ' entregou a '. strtolower($demandaPrazo->status).'.';
             $criadorNotificacao->save();
 
             $bodyEmail = 'Foi entregue a '.strtolower($demandaPrazo->status). '<br/>'. 'Acesse pelo link logo abaixo.';
@@ -697,7 +695,8 @@ class DemandasController extends Controller
             $titleEmail = 'Entregue a alteração ' . $lastNumber;
             $newTimeLine->code = 'entregue-alteracao';
             $newTimeLine->save();
-            $criadorNotificacao->conteudo =  'Agência ' . $demandaPrazo->agencia->nome . ' entregou a alteração '. $lastNumber . '.';
+            $criadorNotificacao->conteudo =  $user->nome . ' entregou a alteração '. $lastNumber . '.';
+
             $criadorNotificacao->save();
             
             $bodyEmail = 'Foi entregue a alteração ' . $lastNumber.'.'. '<br/>'. 'Acesse pelo link logo abaixo.';
@@ -729,9 +728,10 @@ class DemandasController extends Controller
             $criadorNotificacaoEntrega->criado = date('Y-m-d H:i:s');
             $criadorNotificacaoEntrega->visualizada = '0';
             $criadorNotificacaoEntrega->tipo = 'entregue';
-            $criadorNotificacaoEntrega->conteudo =  'Agência ' . $demandaPrazo->agencia->nome .' alterou o status para entregue.';
+            $criadorNotificacaoEntrega->conteudo =  $user->nome .' alterou o status para entregue.';
+            
+            
             $criadorNotificacaoEntrega->save();
-
             $countDemandasReabertas = DemandaReaberta::where('demanda_id', $demanda->id)->count();
 
             if($countDemandasReabertas == 0){
@@ -786,7 +786,7 @@ class DemandasController extends Controller
         $demandaPrazo->save();
         $demandaPrazoN = preg_replace("/[^0-9]/", "", $demandaPrazo->status);
 
-        $demanda = Demanda::find($request->demandaId);
+        $demanda = Demanda::select('id', 'em_pauta', 'criador_id')->where('id', $demandaPrazo->demanda_id)->first();
         $demanda->em_pauta = 1;
         $demanda->save();
 
@@ -794,7 +794,8 @@ class DemandasController extends Controller
         $notificacao->demanda_id = $demandaPrazo->demanda_id;
         $notificacao->criado = date('Y-m-d H:i:s');
         $notificacao->visualizada = '0';
-        $notificacao->conteudo = 'Agência ' . $demandaPrazo->agencia->nome .' iniciou a alteração ' . $demandaPrazoN .'.';
+        $notificacao->conteudo = $user->nome .' iniciou a alteração ' . $demandaPrazoN .'.';
+
         $notificacao->tipo = 'criada';
         $notificacao->usuario_id = $demanda->criador_id;
         $notificacao->save();
@@ -813,15 +814,18 @@ class DemandasController extends Controller
     }
 
     public function acceptTime(Request $request, $id){
+        $user = Auth::User();
         $demandaPrazo = DemandaTempo::where('id', $id)
         ->with('agencia')
         ->with(['demanda' => function($query) {
             $query->select('criador_id', 'id');
         }])
         ->first();
+        
+        $demanda = Demanda::select('id')->where('id', $demandaPrazo->demanda_id)->first();
 
-         //pegar numero
-         if (preg_match('/\d+/', $demandaPrazo->status, $matches)) {
+        //pegar numero
+        if (preg_match('/\d+/', $demandaPrazo->status, $matches)) {
             $lastNumber = $matches[0];
         }
 
@@ -834,11 +838,13 @@ class DemandasController extends Controller
         $notificacao->demanda_id = $demandaPrazo->demanda_id;
         $notificacao->criado = date('Y-m-d H:i:s');
         $notificacao->visualizada = '0';
+
         if($demandaPrazo->code_tempo === 'em-pauta'){
-            $notificacao->conteudo = 'A agência ' . $demandaPrazo->agencia->nome . '  aceitou o novo prazo da ' . strtolower($demandaPrazo->status).'.';
+            $notificacao->conteudo = $user->nome .' aceitou o novo prazo da ' . strtolower($demandaPrazo->status).'.';
         }else if($demandaPrazo->code_tempo === 'alteracao'){
-            $notificacao->conteudo = 'A agência ' . $demandaPrazo->agencia->nome . '  aceitou o novo prazo da alteração ' . $lastNumber.'.';
+           $notificacao->conteudo = $user->nome. ' aceitou o novo prazo da alteração ' . $lastNumber.'.';
         }
+
         $notificacao->tipo = 'criada';
         $notificacao->usuario_id = $demandaPrazo->demanda->criador_id;
         $notificacao->save();
@@ -872,13 +878,14 @@ class DemandasController extends Controller
                 $demanda->recebido = 1;
                 $demanda->save();
                 $newTimeLine->status = "Recebido";
-                $notificacao->conteudo = 'A agência ' . $demanda->agencia->nome . '  recebeu o briefing.';
-    
+                $notificacao->conteudo = $user->nome. ' recebeu o briefing.';
+               
+              
             }else{
                 $demanda->recebido = 1;
                 $demanda->save();
                 $newTimeLine->status = "Recebido job reaberto " .$demandaReopen;
-                $notificacao->conteudo = 'A agência ' . $demanda->agencia->nome . '  recebeu o job reaberto.';
+                $notificacao->conteudo = $user->nome. ' recebeu o job reaberto.';
             }
 
             $notificacao->save();
@@ -922,8 +929,7 @@ class DemandasController extends Controller
             $notificacao->visualizada = '0';
             $notificacao->tipo = 'criada';
             $notificacao->usuario_id = $demanda->criador_id;
-            $notificacao->conteudo = 'A agência ' . $demanda->agencia->nome . '  recebeu a alteração ' .$demandaTempoN.'.';
-
+            $notificacao->conteudo = $user->nome. ' recebeu a alteração ' .$demandaTempoN.'.';
             $notificacao->save();
 
             return back()->with('success', 'Alteração recebida.'); 

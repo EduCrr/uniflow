@@ -659,7 +659,7 @@
                                                                 <div class="contentJobSingle">
                                                                     <h6>Agência usuário(s)</h6>
                                                                     <div class="showUsers">
-                                                                        @foreach ($demanda->agencia['agenciasUsuarios'] as $usuario )
+                                                                        @foreach ($demanda['demandasUsuario'] as $usuario )
                                                                             <span style="background-color: #222">  {{ $usuario->nome }} </span>
                                                                         @endforeach
                                                                     </div>

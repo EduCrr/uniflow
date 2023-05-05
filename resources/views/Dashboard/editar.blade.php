@@ -1,8 +1,4 @@
-@php
-    $layout = $isAdminAg > 0 ? 'layouts.agencia' : 'layouts.colaborador';
-@endphp
-
-@extends($layout)
+@extends('layouts.colaborador')
 @section('title', 'Editar job '. $demanda->id)
 
 @section('css')
@@ -39,7 +35,7 @@
                                                         <form id="formEdut" style="margin-top: 15px" method="POST" action="{{route('Job.editar_action', ['id' => $demanda->id])}}" enctype="multipart/form-data" class="needs-validation" novalidate>
                                                             @csrf
                                                             <div class="mb-3 row">
-                                                                <div class="col-lg-6  mo-b-15">
+                                                                <div class="col-lg-6">
                                                                     <label for="inputT" class="form-label pt-0">Título</label>
                                                                     <div class="">
                                                                         <input name="titulo" value="{{ old('titulo', $demanda->titulo) }}" class="form-control" type="text" required id="inputT">
@@ -61,7 +57,21 @@
                                                                 </div>
                                                             </div>
                                                             <div class="mb-3 row">
-                                                                <div class="col-lg-12  mo-b-15">
+                                                                <div class="col-lg-6">
+                                                                    <label for="inputS" class="col-sm-2 form-label">Usuário(s) responsável(is)</label>
+                                                                    <div class="">
+                                                                        <select class="select2-multiple-users form-control" name="users[]" multiple="multiple" required
+                                                                            id="select2MultipleUsers">
+                                                                            @foreach ($usuarios as $user )
+                                                                                <option value="{{ $user['id'] }}">{{ $user['nome'] }}</option>
+                                                                            @endforeach
+                                                                        </select>
+                                                                        <div class="invalid-feedback">
+                                                                            Preencha o campo usuário
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-lg-6  mo-b-15">
                                                                     <label for="inputD" class="col-sm-2 form-label">Link Google Drive</label>
                                                                     <div class="">
                                                                         <input name="drive" value="{{ $demanda->drive }}" class="form-control" type="text"  id="inputD">
@@ -275,15 +285,25 @@
                 },
             });
 
-           
+            $('.select2-multiple-users').select2({
+                placeholder: "Selecione seu(s) usuário(s)",
+                allowClear: true,
+                templateSelection: function (data, container) {
+                    var cor = $(data.element).data('cor'); // pega a cor do data-cor
+                    $(container).css("background-color", '#222'); // define a cor de fundo do option
+                    return data.text;
+                },
+            });
 
-            // //setores pré-selecionado
+            //setores pré-selecionado
 
             let ids = @json($marcasIds);
+            let idsUsers = @json($usersIds);
             let demandaInicio = @json($demanda->inicio);
             let demandaFinal = @json($demanda->final);
 
             $('#select2Multiple').val(ids).trigger('change');
+            $('#select2MultipleUsers').val(idsUsers).trigger('change');
             
             //calendário
 
@@ -343,7 +363,7 @@
                     }
 
                     $.ajax({
-                        url: "/jobs/date",
+                        url: "/uniflow/jobs/date",
                         type: "post",
                         dataType: "json",
                         headers: {
